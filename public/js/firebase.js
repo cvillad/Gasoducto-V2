@@ -12,11 +12,13 @@ function firebaseconfig(){
     firebase.initializeApp(firebaseConfig);
 }
 
+//document.getElementById("login-btn").addEventListener("click",login)
 function login(){
     email=document.getElementById('email').value
     password=document.getElementById('password').value
+    console.log(email)
     firebase.auth().signInWithEmailAndPassword(email, password).then(function (val) {
-        window.location.href=('operators.html')
+        window.location.href=('../operators.html')
         }, function (reason) {
             alert('Credenciales incorrectas')
     });
@@ -24,6 +26,7 @@ function login(){
 
 function unlogged(){
     var user = firebase.auth().currentUser;
+    console.log(user)
     if (!user) {
         window.location.href=('index.html')
     }
@@ -54,6 +57,7 @@ function createCompany(){
                     console.log(err)
                 });  
         }, function (reason) {
+            console.log(reason)
             alert('Registro fallido')
     });
 }
