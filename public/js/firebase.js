@@ -18,7 +18,7 @@ function login(){
     password=document.getElementById('password').value
     console.log(email)
     firebase.auth().signInWithEmailAndPassword(email, password).then(function (val) {
-        window.location.href=('../operators.html')
+        window.location.href=('./operators.html')
         }, function (reason) {
             alert('Credenciales incorrectas')
     });
@@ -46,22 +46,60 @@ function createCompany(){
                 email: company.email,
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
-                typeDoc: document.getElementById('typeDoc').value,
-                docNumber: document.getElementById('docNum').value,
-                enterpriseName: document.getElementById('enterprise').value
-            })
-                .then(function (docRef) {
-                    
-                    console.log("Document written with ID: ", docRef.id);
-                    window.location.href = "index.html";
-                })
-                .catch(function(err){
-                    console.log(err)
-                });  
+                docNumber: document.getElementById('docNum').value
+            }).catch(function(err){
+                console.log(err)
+            });  
         }, function (reason) {
             console.log(reason)
             alert('Registro fallido')
     });
+}
+
+
+function createEmployee(){
+    // Get a reference to the database service
+    
+    const database = firebase.firestore();
+    database.collection('Employees').add({
+        email: document.getElementById('email').value,
+        name: document.getElementById('name').value,
+        password: document.getElementById('password').value,
+        company: firebase.currentUser().uid
+    }).then(function(val){
+        document.querySelector(".card-body").innerHTML = "";
+        getEmployees()
+    })
+    .catch(function(err){
+        console.log(err)
+    });  
+}
+
+function createEmployee(){
+    // Get a reference to the database service
+   
+    const database = firebase.firestore();
+    database.collection('Employees').add({
+        email: document.getElementById('email').value,
+        name: document.getElementById('name').value,
+        password: document.getElementById('password').value,
+    }).then(function(val){
+        document.querySelector(".card-body").innerHTML = "";
+        getEmployees()
+    })
+    .catch(function(err){
+        console.log(err)
+    });  
+
+    var washingtonRef = db.collection("cities").doc("DC");
+// Atomically add a new region to the "regions" array field.
+washingtonRef.update({
+    regions: firebase.firestore.FieldValue.arrayUnion("greater_virginia")
+});
+// Atomically remove a region from the "regions" array field.
+washingtonRef.update({
+    regions: firebase.firestore.FieldValue.arrayRemove("east_coast")
+});
 }
 
 function recoverPassword(){
@@ -72,5 +110,36 @@ function recoverPassword(){
         console.log('Email sent')
     }).catch(function (e) {
         console.log(e)
+    });
+}
+
+function writeEmployees(){
+    const db = firebase.firestore();
+    db.collection("Employees").get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+            var row = document.createElement("div")
+            row.classList.add("row")
+            row.innerHTML=`<div class="col">${doc.data().name}</div>
+            <div class="col text-right"><button onclick=getEmployee(${doc.id}) type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-user-modal">
+            Editar
+            </button></div>`
+            document.querySelector(".card-body").appendChild(row)
+        });
+    });
+}
+
+function getEmployee(id){
+    const db = firebase.firestore();
+    var docRef = db.collection("cities").doc(id);
+    docRef.get().then(function(doc) {
+        if (doc.exists) {
+            console.log("Document data:", doc.data());
+        } else {
+            console.log("No such document!");
+        }
+    }).catch(function(error) {
+        console.log("Error getting document:", error);
     });
 }
