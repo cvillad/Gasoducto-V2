@@ -63,3 +63,14 @@ function createCompany(){
             alert('Registro fallido')
     });
 }
+
+function recoverPassword(){
+    var email = document.getElementById('email').value
+    var auth = firebase.auth()
+    auth.sendPasswordResetEmail(email)
+    .then( function() {
+        console.log('Email sent')
+    }).catch(function (e) {
+        console.log(e)
+    });
+}

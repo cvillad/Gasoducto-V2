@@ -13,7 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-firestore.js"></script>
     <script src="js/firebase.js"></script>
     <script>firebaseconfig()</script>
-    <title>Login</title>
+    <title>Password Recovery</title>
   </head>
   <body>
     <div class="container-fluid text-center">
@@ -26,17 +26,10 @@
             <div class="card-body">
               <form>
                 <div class="form-group">
-                  <input type="email" id="email" class="form-control" placeholder="Usuario">
-                </div>
-                <div class="form-group">
-                  <input type="password" id="password" class="form-control" placeholder="Contraseña">
+                  <input type="email" id="email" class="form-control" placeholder="Ingresa tu correo">
                 </div>
               </form>
-              <a onclick="login()" id="login-btn" type="button" class="btn btn-primary btn-block">Ingresar</a>
-            </div>
-            <div class="card-footer">
-              <arcicle><a href="recovery.html">Olvidaste tu contraseña?</a></arcicle>
-              <article>No tienes cuenta? <a href="register.html">Regístrate</a></article>
+              <a onclick="recoverPassword()" id="recover-btn" type="button" class="btn btn-primary btn-block">Ingresar</a>
             </div>
           </div>
         </div>
