@@ -46,12 +46,14 @@ function createCompany(){
                 email: company.email,
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
-                docNumber: document.getElementById('docNum').value
+                typeDoc: document.getElementById('typeDoc').value,
+                docNumber: document.getElementById('docNum').value,
+                enterpriseName: document.getElementById('enterprise').value
             })
                 .then(function (docRef) {
                     
                     console.log("Document written with ID: ", docRef.id);
-
+                    window.location.href = "index.html";
                 })
                 .catch(function(err){
                     console.log(err)
