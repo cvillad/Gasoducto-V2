@@ -74,16 +74,18 @@ function writeEmployees(){
     db.collection("Employees").get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
             // doc.data() is never undefined for query doc snapshots
-            console.log(doc.id, " => ", doc.data());
-            var row = document.createElement("div")
-            row.classList.add("row")
-            row.innerHTML=`<div class="col">${doc.data().name}</div>
-            <div class="col text-right"><button onclick=editEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal">
-            Editar
-            </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
-            </button></div>`
-            
-            document.querySelector(".card-body").appendChild(row)
+            console.log(doc.id, " => ", doc.data().company);
+            console.log(firebase.auth().currentUser.uid==doc.data().company)
+            if(firebase.auth().currentUser.uid==doc.data().company){
+                const row = document.createElement("div")
+                row.classList.add("row")
+                row.innerHTML=`<div class="col">${doc.data().name}</div>
+                <div class="col text-right"><button onclick=updateEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal">
+                Editar
+                </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
+                </button></div>`
+                document.querySelector(".card-body").appendChild(row)
+            }
         });
     });
 }
@@ -93,17 +95,18 @@ function addEmployee(){
     const database = firebase.firestore();
     database.collection('Employees').add({
         email: document.querySelector('#email').value,
+        address: document.querySelector("#address").value,
         name: document.querySelector('#name').value,
         password: document.querySelector('#password').value,
         company: firebase.auth().currentUser.uid,
         state: true
-    }).then(function(val){
+    }).then(()=>{
         writeEmployees()
     })
     .catch(function(err){
         console.log(err)
-    }); 
-    document.querySelector(".accept-btn").removeEventListener("click",addEmployee)
+    }).finally(()=>document.querySelector(".accept-btn").removeEventListener("click",addEmployee)) 
+    
 }
 
 function createEmployee(){
@@ -116,46 +119,47 @@ function createEmployee(){
     document.querySelector(".accept-btn").addEventListener("click",addEmployee)
 }
 
-function updateEmployee(userid){
+async function getEmployee(id){
     const db = firebase.firestore()
-    console.log("careverga" +userid)
-    db.collection("Employees").doc(userid).update({
+    const docRef = db.collection("Employees").doc(id)
+    const employee = await docRef.get()
+    console.log("careverga  "+employee.data().name)
+    return employee.data()
+}
+
+function edit(evt){
+    const db=firebase.firestore()
+    console.log(evt.currentTarget.ui)
+    db.collection("Employees").doc(evt.currentTarget.ui).update({
         email: document.querySelector('#email').value,
         name: document.querySelector('#name').value,
         password: document.querySelector('#password').value,
         state: document.querySelector("#inputActive").checked
-    })
-    console.log("careverga" +userid)
-    document.querySelector(".accept-btn").removeEventListener("click",updateEmployee)
-    writeEmployees()
+    }).then(()=>writeEmployees())
+    .catch((err)=>console.log("catch: "+ err))
+    .finally(()=>document.querySelector(".accept-btn").removeEventListener("click",edit))
 }
 
-function editEmployee(userid){
-    document.querySelector(".accept-btn").addEventListener("click",updateEmployee.bind(null,userid))
+function updateEmployee(id){
     document.querySelector("#modal-title").innerHTML="Editar empleado"
+    document.querySelector(".accept-btn").addEventListener("click",edit)
+    document.querySelector(".accept-btn").ui=id
     const db = firebase.firestore()
-    var docRef = db.collection("Employees").doc(userid)
-    docRef.get().then( (doc)=>{
-        if (doc.exists) {
-            document.querySelector("#password").value=doc.data().password
-            document.querySelector("#email").value=doc.data().email
-            document.querySelector("#name").value=doc.data().name
-            document.querySelector("#address").value=doc.data().address
-            document.querySelector("#inputActive").checked=doc.data().state
-        }else {
-            console.log("No such document!");
-        }
-    }).catch((error)=> {
-        console.log("Error getting document:", error);
-    })
-
+    getEmployee(id).then((employee)=>{
+        console.log("caremonda: "+employee)
+        document.querySelector("#password").value=employee.password
+        document.querySelector("#email").value=employee.email
+        document.querySelector("#name").value=employee.name
+        document.querySelector("#address").value=employee.address
+        document.querySelector("#inputActive").checked=employee.state
+    }).catch((err)=>console.log("edit error: "+err))
 }
 
 function deleteEmployee(userid){
     const db=firebase.firestore()
     db.collection("Employees").doc(userid).delete().then(()=>{
         console.log("Document successfully deleted!");
-    }).then(()=>writeEmployees())
+    }).then(()=>writeEmployees)
     .catch((error)=> {
         console.error("Error removing document: ", error);
     })
