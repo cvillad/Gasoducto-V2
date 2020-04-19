@@ -17,19 +17,22 @@ function login(){
     email=document.getElementById('email').value
     password=document.getElementById('password').value
     console.log(email)
-    firebase.auth().signInWithEmailAndPassword(email, password).then(function (val) {
-        window.location.href=('./operators.html')
+    firebase.auth().signInWithEmailAndPassword(email, password).then((val)=> {
+        window.location.href=('./admin.html')
         }, function (reason) {
             alert('Credenciales incorrectas')
-    });
+    })
 }
 
 function unlogged(){
-    var user = firebase.auth().currentUser;
-    console.log(user)
-    if (!user) {
-        window.location.href=('index.html')
-    }
+    firebase.auth().onAuthStateChanged(function currentCompany(user) {
+        if (user) {
+          // User is signed in.
+        } else {
+          window.location.href=("./index.html")
+        }
+        return user
+    });
 }
 
 function createCompany(){
@@ -37,7 +40,7 @@ function createCompany(){
     var email=document.getElementById('email').value
     var password=document.getElementById('password').value
     firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(function (val) {
+        .then(()=> {
             alert('Usuario creado correctamente')
             var database = firebase.firestore();
             var company=firebase.auth().currentUser
@@ -50,10 +53,10 @@ function createCompany(){
             }).catch(function(err){
                 console.log(err)
             });  
-        }, function (reason) {
+        }, (reason)=> {
             console.log(reason)
             alert('Registro fallido')
-    });
+    }).then(()=>window.location.href=("./admin.html"))
 }
 
 
@@ -69,11 +72,11 @@ function recoverPassword(){
 }
 
 function writeEmployees(){
-    document.querySelector(".card-body").innerHTML = "";
+    
     const db = firebase.firestore();
-    db.collection("Employees").get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-            // doc.data() is never undefined for query doc snapshots
+    db.collection("Employees").onSnapshot((querySnapshot)=> {
+        document.querySelector(".card-body").innerHTML = "";
+        querySnapshot.forEach((doc)=> {
             console.log(doc.id, " => ", doc.data().company);
             console.log(firebase.auth().currentUser.uid==doc.data().company)
             if(firebase.auth().currentUser.uid==doc.data().company){
@@ -86,8 +89,8 @@ function writeEmployees(){
                 </button></div>`
                 document.querySelector(".card-body").appendChild(row)
             }
-        });
-    });
+        })
+    })
 }
 
 function addEmployee(){
@@ -100,10 +103,7 @@ function addEmployee(){
         password: document.querySelector('#password').value,
         company: firebase.auth().currentUser.uid,
         state: true
-    }).then(()=>{
-        writeEmployees()
-    })
-    .catch(function(err){
+    }) .catch((err)=>{
         console.log(err)
     }).finally(()=>document.querySelector(".accept-btn").removeEventListener("click",addEmployee)) 
     
@@ -133,9 +133,10 @@ function edit(evt){
     db.collection("Employees").doc(evt.currentTarget.ui).update({
         email: document.querySelector('#email').value,
         name: document.querySelector('#name').value,
+        address: document.querySelector("#address").value,
         password: document.querySelector('#password').value,
         state: document.querySelector("#inputActive").checked
-    }).then(()=>writeEmployees())
+    })
     .catch((err)=>console.log("catch: "+ err))
     .finally(()=>document.querySelector(".accept-btn").removeEventListener("click",edit))
 }
@@ -159,7 +160,7 @@ function deleteEmployee(userid){
     const db=firebase.firestore()
     db.collection("Employees").doc(userid).delete().then(()=>{
         console.log("Document successfully deleted!");
-    }).then(()=>writeEmployees)
+    })
     .catch((error)=> {
         console.error("Error removing document: ", error);
     })
