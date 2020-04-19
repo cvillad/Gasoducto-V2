@@ -12,51 +12,69 @@ function firebaseconfig(){
     firebase.initializeApp(firebaseConfig);
 }
 
+var currentEmployee
 //document.getElementById("login-btn").addEventListener("click",login)
 function login(){
     email=document.getElementById('email').value
     password=document.getElementById('password').value
-    console.log(email)
-    firebase.auth().signInWithEmailAndPassword(email, password).then((val)=> {
+    firebase.auth().signInWithEmailAndPassword(email, password).then(()=> {
         window.location.href=('./admin.html')
-        }, function (reason) {
-            alert('Credenciales incorrectas')
+        }, ()=> {
+            const db=firebase.firestore()
+            db.collection("Employees").where("email", "==", email).where("password","==",password)
+            .where("state","==",true).get().then((querySnapshot)=> {
+                querySnapshot.forEach(function(doc) {
+                    currentEmployee=doc
+                    console.log(currentEmployee)
+                    window.location.href=("./operators.html")
+                })
+            }).catch(function(error) {
+                console.log("Credenciales incorrectas: ", error);
+            })
     })
 }
 
 function unlogged(){
-    firebase.auth().onAuthStateChanged(function currentCompany(user) {
+    firebase.auth().onAuthStateChanged((user)=> {
+        console.log("console: "+user)
         if (user) {
-          // User is signed in.
+
         } else {
-          window.location.href=("./index.html")
+            window.location.href=("./index.html")
         }
-        return user
-    });
+    })
+}
+
+var image
+function loadImage(event){
+    image=event.target.files[0]
 }
 
 function createCompany(){
     // Get a reference to the database service
+    event.preventDefault()
     var email=document.getElementById('email').value
     var password=document.getElementById('password').value
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(()=> {
+    if (validateEmail(email)){
+        firebase.auth().createUserWithEmailAndPassword(email, password).then(()=> {
             alert('Usuario creado correctamente')
-            var database = firebase.firestore();
-            var company=firebase.auth().currentUser
+            const database = firebase.firestore();
+            const company=firebase.auth().currentUser
+            const ref=firebase.storage().ref("images/"+company.uid)
+            ref.put(image)
             database.collection('Companies').add({
                 id: company.uid,
                 email: company.email,
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
                 docNumber: document.getElementById('docNum').value
-            }).catch(function(err){
-                console.log(err)
-            });  
+            }).then(()=>window.location.href="./admin.html")
+            .catch((err)=>console.log(err))
         }, (reason)=> {
             console.log(reason)
             alert('Registro fallido')
-    }).then(()=>window.location.href=("./admin.html"))
+        })
+    }
 }
 
 
@@ -72,14 +90,12 @@ function recoverPassword(){
 }
 
 function writeEmployees(){
-    
     const db = firebase.firestore();
     db.collection("Employees").onSnapshot((querySnapshot)=> {
         document.querySelector(".card-body").innerHTML = "";
         querySnapshot.forEach((doc)=> {
-            console.log(doc.id, " => ", doc.data().company);
-            console.log(firebase.auth().currentUser.uid==doc.data().company)
             if(firebase.auth().currentUser.uid==doc.data().company){
+                console.log(doc.id)
                 const row = document.createElement("div")
                 row.classList.add("row")
                 row.innerHTML=`<div class="col">${doc.data().name}</div>
@@ -94,27 +110,36 @@ function writeEmployees(){
 }
 
 function addEmployee(){
-        // Get a reference to the database service
+    console.log("hpta")
     const database = firebase.firestore();
-    database.collection('Employees').add({
-        email: document.querySelector('#email').value,
-        address: document.querySelector("#address").value,
-        name: document.querySelector('#name').value,
-        password: document.querySelector('#password').value,
-        company: firebase.auth().currentUser.uid,
-        state: true
-    }) .catch((err)=>{
-        console.log(err)
-    }).finally(()=>document.querySelector(".accept-btn").removeEventListener("click",addEmployee)) 
-    
+    email=document.querySelector('#email').value
+    if(validateEmail(email)){
+        database.collection('Employees').add({
+            email: document.querySelector('#email').value,
+            address: document.querySelector("#address").value,
+            name: document.querySelector('#name').value,
+            password: document.querySelector('#password').value,
+            company: firebase.auth().currentUser.uid,
+            state: true
+        }).then((doc)=> {
+            const ref=firebase.storage().ref("images/employees/"+doc.id)
+            ref.put(image)
+            cleanFormUser()
+        })
+        .catch((err)=>{
+            console.log(err)
+        }).finally(()=>document.querySelector(".accept-btn").removeEventListener("click",addEmployee)) 
+    }
 }
 
-function createEmployee(){
+function cleanFormUser(){
     document.querySelector("#password").value=""
     document.querySelector("#email").value=""
     document.querySelector("#name").value=""
     document.querySelector("#address").value=""
-    document.querySelector("#inputActive").checked=""
+}
+
+function createEmployee(){
     document.querySelector("#modal-title").innerHTML="Crear empleado"
     document.querySelector(".accept-btn").addEventListener("click",addEmployee)
 }
@@ -123,19 +148,23 @@ async function getEmployee(id){
     const db = firebase.firestore()
     const docRef = db.collection("Employees").doc(id)
     const employee = await docRef.get()
-    console.log("careverga  "+employee.data().name)
     return employee.data()
 }
 
 function edit(evt){
     const db=firebase.firestore()
-    console.log(evt.currentTarget.ui)
-    db.collection("Employees").doc(evt.currentTarget.ui).update({
+    id=evt.currentTarget.ui
+    db.collection("Employees").doc(id).update({
         email: document.querySelector('#email').value,
         name: document.querySelector('#name').value,
         address: document.querySelector("#address").value,
         password: document.querySelector('#password').value,
         state: document.querySelector("#inputActive").checked
+    }).then(()=>{
+        console.log("el ney: "+id)
+        const ref=firebase.storage().ref("images/employees/"+id)
+        ref.put(image)
+        cleanFormUser()
     })
     .catch((err)=>console.log("catch: "+ err))
     .finally(()=>document.querySelector(".accept-btn").removeEventListener("click",edit))
@@ -153,7 +182,20 @@ function updateEmployee(id){
         document.querySelector("#name").value=employee.name
         document.querySelector("#address").value=employee.address
         document.querySelector("#inputActive").checked=employee.state
+        loadImageFromDB(id)
     }).catch((err)=>console.log("edit error: "+err))
+}
+
+function loadImageFromDB(id){
+    firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
+        // `url` is the download URL for 'images/stars.jpg'
+
+        // Or inserted into an <img> element:
+    var img = document.getElementById('op-img');
+    img.src = url; 
+    }).catch(function(error) {
+    // Handle any errors
+    });
 }
 
 function deleteEmployee(userid){
@@ -164,5 +206,13 @@ function deleteEmployee(userid){
     .catch((error)=> {
         console.error("Error removing document: ", error);
     })
-    
+}
+
+function validateEmail(mail) 
+{
+ if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(document.querySelector("#email").value)){
+    return (true)
+  }
+    alert("You have entered an invalid email address!")
+    return (false)
 }

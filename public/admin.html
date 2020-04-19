@@ -4,15 +4,16 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    
     <link rel="stylesheet" href="styles/styles-tab.css">
     <script src="js/admin.js"></script>
     <script src="js/firebase.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-firestore.js"></script>
     
     <script>firebaseconfig()</script>
@@ -75,15 +76,20 @@
                 <label for="inputPassword">Password</label>
                 <input id='password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
               </div>
+              <div class="form-group">
+                <label for="image">Foto operador</label>
+                <input type="file" onchange="loadImage(event)" class="form-control-file" id="image">
+              </div>
+              <img id="op-img" src="">
               <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="inputActive">
+                <input type="checkbox" checked class="form-check-input" id="inputActive">
                 <label class="form-check-label" for="inputCheck">Activo</label>
               </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" id="close-createuser" data-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary accept-btn" data-dismiss="modal">Aceptar</button>
+              </div>
             </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="close-createuser" data-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary accept-btn" data-dismiss="modal">Aceptar</button>
           </div>
         </div>
       </div>

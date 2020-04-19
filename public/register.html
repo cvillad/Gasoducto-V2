@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="styles/styles.css">
     <script src="js/firebase.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-firestore.js"></script>
     
@@ -25,9 +26,9 @@
               <h2>Gasoductos XXXXXX</h2>
             </div>
             <div class="card-body">
-              <form>
+              <form onsubmit="createCompany()">
                 <div class="form-group">
-                    <input type="text" id="name" class="form-control" placeholder="Nombre">
+                    <input required type="text" id="name" class="form-control" placeholder="Nombre">
                 </div>
                 <div class="form-group">
                 <div class="row">
@@ -41,28 +42,28 @@
                   </div>
                   <div class="col">
                     <div class="form-group">
-                      <input type="number" id="docNum" class="form-control" placeholder="Número de documento">
+                      <input required type="number" id="docNum" class="form-control" placeholder="Número de documento">
                     </div>
                   </div>
                 </div>
                 <div class="form-group">
-                    <input type="number" id="phone" class="form-control" placeholder="Teléfono">
+                    <input required type="number" id="phone" class="form-control" placeholder="Teléfono">
                 </div>
                 <div class="form-group">
-                  <input type="email" id="email" class="form-control" placeholder="Correo electrónico">
+                  <input required type="email" id="email" class="form-control" placeholder="Correo electrónico">
                 </div>
                 <div class="form-group">
-                  <input type="password" id="password" class="form-control" placeholder="Contraseña">
+                  <input required type="password" id="password" class="form-control" placeholder="Contraseña">
                 </div>
                 <div class="form-group">
-                  <input type="text" id="enterprise" class="form-control" placeholder="Nombre Empresa">
+                  <input required type="text" id="enterprise" class="form-control" placeholder="Nombre Empresa">
                 </div>
                 <div class="form-group">
-                  <label for="enterpriseImage">Imagen de la empresa</label>
-                  <input type="file" class="form-control-file" id="enterpriseImage">
+                  <label for="image">Imagen de la empresa</label>
+                  <input type="file" onchange="loadImage(event)" class="form-control-file" id="image">
                 </div>
+                <button type="submit" class="btn btn-primary btn-block">Registrarse</a>
               </form>
-              <a onclick="createCompany()" type="button" class="btn btn-primary btn-block">Registrarse</a>
             </div>
           </div>
         </div>
