@@ -57,51 +57,6 @@ function createCompany(){
 }
 
 
-function createEmployee(){
-    // Get a reference to the database service
-    
-    const database = firebase.firestore();
-    database.collection('Employees').add({
-        email: document.getElementById('email').value,
-        name: document.getElementById('name').value,
-        password: document.getElementById('password').value,
-        company: firebase.currentUser().uid
-    }).then(function(val){
-        document.querySelector(".card-body").innerHTML = "";
-        getEmployees()
-    })
-    .catch(function(err){
-        console.log(err)
-    });  
-}
-
-function createEmployee(){
-    // Get a reference to the database service
-   
-    const database = firebase.firestore();
-    database.collection('Employees').add({
-        email: document.getElementById('email').value,
-        name: document.getElementById('name').value,
-        password: document.getElementById('password').value,
-    }).then(function(val){
-        document.querySelector(".card-body").innerHTML = "";
-        getEmployees()
-    })
-    .catch(function(err){
-        console.log(err)
-    });  
-
-    var washingtonRef = db.collection("cities").doc("DC");
-// Atomically add a new region to the "regions" array field.
-washingtonRef.update({
-    regions: firebase.firestore.FieldValue.arrayUnion("greater_virginia")
-});
-// Atomically remove a region from the "regions" array field.
-washingtonRef.update({
-    regions: firebase.firestore.FieldValue.arrayRemove("east_coast")
-});
-}
-
 function recoverPassword(){
     var email = document.getElementById('email').value
     var auth = firebase.auth()
@@ -114,6 +69,7 @@ function recoverPassword(){
 }
 
 function writeEmployees(){
+    document.querySelector(".card-body").innerHTML = "";
     const db = firebase.firestore();
     db.collection("Employees").get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
@@ -122,24 +78,87 @@ function writeEmployees(){
             var row = document.createElement("div")
             row.classList.add("row")
             row.innerHTML=`<div class="col">${doc.data().name}</div>
-            <div class="col text-right"><button onclick=getEmployee(${doc.id}) type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-user-modal">
+            <div class="col text-right"><button onclick=editEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal">
             Editar
+            </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
             </button></div>`
+            
             document.querySelector(".card-body").appendChild(row)
         });
     });
 }
 
-function getEmployee(id){
-    const db = firebase.firestore();
-    var docRef = db.collection("cities").doc(id);
-    docRef.get().then(function(doc) {
+function addEmployee(){
+        // Get a reference to the database service
+    const database = firebase.firestore();
+    database.collection('Employees').add({
+        email: document.querySelector('#email').value,
+        name: document.querySelector('#name').value,
+        password: document.querySelector('#password').value,
+        company: firebase.auth().currentUser.uid,
+        state: true
+    }).then(function(val){
+        writeEmployees()
+        
+    })
+    .catch(function(err){
+        console.log(err)
+    }); 
+    document.querySelector(".accept-btn").removeEventListener("click",addEmployee)
+}
+
+function createEmployee(){
+    document.querySelector("#password").value=""
+    document.querySelector("#email").value=""
+    document.querySelector("#name").value=""
+    document.querySelector("#address").value=""
+    document.querySelector("#inputActive").checked=""
+    document.querySelector("#modal-title").innerHTML="Crear empleado"
+    document.querySelector(".accept-btn").addEventListener("click",addEmployee)
+}
+
+function updateEmployee(userid){
+    const db = firebase.firestore()
+    console.log("careverga" +userid)
+    db.collection("Employees").doc(userid).update({
+        email: document.querySelector('#email').value,
+        name: document.querySelector('#name').value,
+        password: document.querySelector('#password').value,
+        state: document.querySelector("#inputActive").checked
+    })
+    console.log("careverga" +userid)
+    document.querySelector(".accept-btn").removeEventListener("click",updateEmployee)
+}
+
+function editEmployee(userid){
+    document.querySelector(".accept-btn").addEventListener("click",updateEmployee.bind(null,userid))
+    document.querySelector("#modal-title").innerHTML="Editar empleado"
+    const db = firebase.firestore()
+    var docRef = db.collection("Employees").doc(userid)
+    docRef.get().then( (doc)=>{
         if (doc.exists) {
-            console.log("Document data:", doc.data());
-        } else {
+            document.querySelector("#password").value=doc.data().password
+            document.querySelector("#email").value=doc.data().email
+            document.querySelector("#name").value=doc.data().name
+            document.querySelector("#address").value=doc.data().address
+            document.querySelector("#inputActive").checked=doc.data().state
+        }else {
             console.log("No such document!");
         }
-    }).catch(function(error) {
+    }).catch((error)=> {
         console.log("Error getting document:", error);
-    });
+    })
+
+}
+
+function deleteEmployee(userid){
+    const db=firebase.firestore()
+    db.collection("Employees").doc(userid).delete().then(()=>{
+        console.log("Document successfully deleted!");
+    }).then({
+
+    }).catch((error)=> {
+        console.error("Error removing document: ", error);
+    })
+    writeEmployees()
 }
