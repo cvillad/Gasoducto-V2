@@ -99,7 +99,6 @@ function addEmployee(){
         state: true
     }).then(function(val){
         writeEmployees()
-        
     })
     .catch(function(err){
         console.log(err)
@@ -128,6 +127,7 @@ function updateEmployee(userid){
     })
     console.log("careverga" +userid)
     document.querySelector(".accept-btn").removeEventListener("click",updateEmployee)
+    writeEmployees()
 }
 
 function editEmployee(userid){
@@ -155,10 +155,9 @@ function deleteEmployee(userid){
     const db=firebase.firestore()
     db.collection("Employees").doc(userid).delete().then(()=>{
         console.log("Document successfully deleted!");
-    }).then({
-
-    }).catch((error)=> {
+    }).then(()=>writeEmployees())
+    .catch((error)=> {
         console.error("Error removing document: ", error);
     })
-    writeEmployees()
+    
 }
