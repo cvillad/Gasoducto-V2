@@ -29,7 +29,7 @@ function login(){
                 querySnapshot.forEach((doc) =>{
                     currentEmployee=doc
                     console.log(currentEmployee+", "+doc.id)
-                    window.location.href=("./operators.html?employeeid=="+doc.id)
+                    window.location.href=("./employeeHome.html?employeeid=="+doc.id)
                 })
             }).catch(function(error) {
                 console.log("Credenciales incorrectas: ", error);

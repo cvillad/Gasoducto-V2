@@ -93,3 +93,9 @@ html,body{
 .block {
     width: 100%;
 }
+
+.custom-nav {
+    position: fixed;
+    left: 0;
+    right:0;
+}

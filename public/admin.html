@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     
-    <link rel="stylesheet" href="styles/styles-tab.css">
+    
     <script src="js/admin.js"></script>
     <script src="js/firebase.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-app.js"></script>
@@ -21,15 +21,19 @@
     <title>Administrator</title>
   </head>
   <body>
-    <div class="container-fluidr">
-      <div class="tab">
-        <button class="tablinks" onclick="openTab(event, 'op-list')">Lista de operadores</button>
-        <button class="tablinks" onclick="openTab(event, 'Paris')">Paris</button>
-      </div>
+
+    <nav class="navbar custom-nav navbar-light bg-light justify-content-between">
+      <a class="navbar-brand">Test</a>
+      <form class="form-inline">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+      </form>
+    </nav>
+
+      
       <!-- Tab content -->
-      <div id="op-list" class="tabcontent">
+  
           <div class="card operator-card">
-            <div class="card-header">
+            <div class="card-header justify-content-between">
               <h4>Nombre Operador</h4>
               <button onclick="createEmployee()" type="button" class="btn btn-primary add-btn" data-toggle="modal" data-target="#create-user-modal">
                 Añadir
@@ -39,14 +43,8 @@
               <script>writeEmployees()</script>
             </div>
           </div>
-      </div>
       
-      <div id="Paris" class="tabcontent">
-        <h3>Paris</h3>
-        <p>Paris is the capital of France.</p>
-      </div>
-    </div>
-      
+
 
     <div class="modal fade" id="create-user-modal" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">
       <div class="modal-dialog" role="document">
