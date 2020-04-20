@@ -133,6 +133,7 @@ function writeEmployees(){
                 <div class="col text-right"><button onclick=updateEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal">
                 Editar
                 </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
+                <i class="fas fa-trash-alt"></i>
                 </button></div>`
                 document.querySelector(".card-body").appendChild(row)
             }
@@ -141,6 +142,7 @@ function writeEmployees(){
 }
 
 function addEmployee(){
+    
     const database = firebase.firestore();
     email=document.querySelector('#email').value
     if(validateEmail(email)){
@@ -158,7 +160,9 @@ function addEmployee(){
         })
         .catch((err)=>{
             console.log(err)
-        }).finally(()=>document.querySelector(".accept-btn").removeEventListener("click",addEmployee)) 
+        }).finally(()=>{
+            document.querySelector(".accept-btn").removeEventListener("click",addEmployee)
+    }) 
     }
 }
 
@@ -170,6 +174,7 @@ function cleanFormUser(){
 }
 
 function createEmployee(){
+    document.querySelector("#op-img").style.display="none"
     document.querySelector("#modal-title").innerHTML="Crear empleado"
     document.querySelector(".accept-btn").addEventListener("click",addEmployee)
 }
@@ -201,6 +206,7 @@ function edit(evt){
 }
 
 function updateEmployee(id){
+    document.querySelector("#op-img").style.display="block"
     document.querySelector("#modal-title").innerHTML="Editar empleado"
     document.querySelector(".accept-btn").addEventListener("click",edit)
     document.querySelector(".accept-btn").ui=id
