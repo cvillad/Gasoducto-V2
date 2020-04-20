@@ -16,7 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-firestore.js"></script>
-    
+    <link rel="stylesheet" href="styles/styles.css">
     <script>firebaseconfig()</script>
     <script>unlogged()</script>
     <title>Administrator</title>
@@ -24,15 +24,16 @@
   <body>
 
     <nav class="navbar custom-nav navbar-light bg-light justify-content-between">
-      <a class="navbar-brand"><script>getCompanyName()</script></a>
+      <a class="navbar-brand">Test</a>
       <form class="form-inline">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
       </form>
     </nav>
 
       
-      <!-- Tab content -->
-  
+    <div class="container-fluid ">
+      <div class="row h-100">
+        <div class="col-sm-12 vert-cent">
           <div class="card operator-card">
             <div class="card-header justify-content-between">
               <h4>Nombre Operador</h4>
@@ -44,6 +45,9 @@
               <script>writeEmployees()</script>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
       
 
 
