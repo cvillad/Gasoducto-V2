@@ -99,3 +99,7 @@ html,body{
     left: 0;
     right:0;
 }
+
+.card-header {
+    display: flex;
+}

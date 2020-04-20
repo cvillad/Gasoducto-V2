@@ -13,12 +13,14 @@
     <script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-firestore.js"></script>
     <script src="js/firebase.js"></script>
     <script>firebaseconfig()</script>
+    <script>getCompanyName()</script>
     <link rel="stylesheet" href="styles/styles.css">
     <title>Employee</title>
   </head>
   <body>
     <nav class="navbar custom-nav navbar-light bg-light justify-content-between">
-      <a class="navbar-brand">Test</a>
+      <div id="navbar-title">
+      </div>
       <form class="form-inline">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
       </form>

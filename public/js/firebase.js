@@ -290,31 +290,57 @@ function validateEmail(mail)
     return (false)
 }
 
-function getEnterprise(){
-    const user = firebase.auth().currentUser
+async function getCompanyName(){
     const db = firebase.firestore()
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-            db.collection("Companies").where("id", "==", user.uid).get()
-            .then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                console.log(user.uid, " => ", doc.data().id);
-                if(user.uid==doc.data().id){
-                    name = doc.data().name
-                    console.log(name)
-
-                }
-            });
-        }).catch( (err) => {
-            console.log("Error getting doc")
+    if(document.location.search == "?employeeidundefined") {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                const companyId = firebase.auth().currentUser.uid
+                console.log(companyId)
+                db.collection("Companies").doc(companyId).get().then(function(doc){
+                    if(doc.exists){
+                          console.log("monda")
+                          let div = document.createElement("div")
+                          div.innerHTML = `<a class="navbar-brand">${doc.data().enterpriseName}</a>`
+                          document.getElementById("navbar-title").appendChild(div) 
+                    }
+                })
+              // User is signed in.
+            } else {
+              // No user is signed in.
+            }
+        });
+        // const companyId = company.uid;
+        // console.log(companyId)
+        // let companyName = await db.collection("Companies").where("id","==",companyId).get().then(function(querySnapshot) {
+        //     querySnapshot.forEach(function(doc) {
+        //         if (doc.exists){
+        //             let div = document.createElement("div")
+        //             div.innerHTML = `<a class="navbar-brand">${doc.data().enterpriseName}</a>`
+        //             document.getElementById("navbar-title").appendChild(div)
+        //         }
+        //     })
+        // })
+    }else{
+        let id = document.location.search.split("==")[1];
+        let companyId = await db.collection("Employees").doc(id).get().then(function(doc) {
+            if(doc.exists){
+                console.log(doc.data().company);
+                return doc.data().company
+                console.log(companyId)
+            }
         })
-         console.log(name);
-          console.log(user.uid)
-          return name
-        } else {
-          // User not logged in or has just logged out.
-        }
-    });
+        console.log("monda")
+        let companyName = await db.collection("Companies").where("id","==",companyId).get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                if (doc.exists){
+                    let div = document.createElement("div")
+                    div.innerHTML = `<a class="navbar-brand">${doc.data().enterpriseName}</a>`
+                    document.getElementById("navbar-title").appendChild(div)
+                }
+            })
+        })
+    }
 }
 
 function getTests(){
@@ -362,7 +388,6 @@ function showTest(){
             button.classList.add("row-padding")
             button.innerHTML=`<a href="results.html" type="button" class="btn btn-primary" onclick=sendTest(${doc.id})>Enviar</a>`
             document.getElementById("test-body").appendChild(button)
-
         }else{
             console.log("doc does not exist")
         }
