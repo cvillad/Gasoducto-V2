@@ -91,6 +91,24 @@ async function getCurrentUser(){
     }
 }
 
+function createEmployee(){
+    // Get a reference to the database service
+    
+    const database = firebase.firestore();
+    database.collection('Employees').add({
+        email: document.getElementById('email').value,
+        name: document.getElementById('name').value,
+        password: document.getElementById('password').value,
+        company: firebase.currentUser().uid
+    }).then(function(val){
+        document.querySelector(".card-body").innerHTML = "";
+        getEmployees()
+    })
+    .catch(function(err){
+        console.log(err)
+    });  
+}
+
 function recoverPassword(){
     var email = document.getElementById('email').value
     var auth = firebase.auth()
@@ -209,6 +227,44 @@ function loadImageFromDB(id){
     });
 }
 
+
+function createQuestionObject(question){
+    if (document.getElementById(`radios${question}o1`).checked){
+        correct = document.getElementById(`radios${question}o1`).value
+    } else if (document.getElementById(`radios${question}o2`).checked){
+        correct = document.getElementById(`radios${question}o2`).value
+    } else {
+        correct = document.getElementById(`radios${question}o3`).value
+    }
+    let temp = {
+      description: document.getElementById(`question${question}Desc`).value,
+      option1: document.getElementById(`q${question}o1`).value,
+      option2: document.getElementById(`q${question}o2`).value,
+      option3: document.getElementById(`q${question}o3`).value,
+      weight: document.getElementById(`weight${question}`).value,
+      correct: correct
+    }
+    return temp
+  }
+  
+
+  function createTest(){
+    const db = firebase.firestore()
+    const company = firebase.auth().currentUser
+    db.collection('Tests').add({
+      companyId: company.uid,
+      testName: document.getElementById("testName").value,
+      question1: createQuestionObject(1),
+      question2: createQuestionObject(2),
+      question3: createQuestionObject(3),
+      question4: createQuestionObject(4),
+      question5: createQuestionObject(5)
+    }).catch(function(err) {
+        alert("No se pudo crear la prueba, revise todos los campos")
+        console.log(err)
+    })
+  }
+
 function deleteEmployee(userid){
     const db=firebase.firestore()
     db.collection("Employees").doc(userid).delete().then(()=>{
@@ -226,4 +282,123 @@ function validateEmail(mail)
   }
     alert("You have entered an invalid email address!")
     return (false)
+}
+
+function getEnterprise(){
+    const user = firebase.auth().currentUser
+    const db = firebase.firestore()
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            db.collection("Companies").where("id", "==", user.uid).get()
+            .then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                console.log(user.uid, " => ", doc.data().id);
+                if(user.uid==doc.data().id){
+                    name = doc.data().name
+                    console.log(name)
+
+                }
+            });
+        }).catch( (err) => {
+            console.log("Error getting doc")
+        })
+         console.log(name);
+          console.log(user.uid)
+          return name
+        } else {
+          // User not logged in or has just logged out.
+        }
+    });
+}
+
+function getTests(){
+    const db = firebase.firestore()
+    const company = "2OCZqqf4SseTUtN06Uh9GIDfBSg2"
+    db.collection("Tests").where("companyId","==",company).get()
+    .then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            testListTemplate(doc)
+        })
+    })
+
+}
+
+function testListTemplate(doc){
+    var div = document.createElement("div")
+    div.classList.add("card")
+    div.innerHTML=`
+            <div class="card-body justify-content-between shown-tests">
+                <p>${doc.data().testName}</p>
+                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Realizar</button>
+            </div>`
+    document.getElementById("tests-card").appendChild(div)
+}
+
+function openTest(docID){
+   window.location.href=(`test.html?id=${docID}`)
+}
+
+function showTest(){
+   url = window.location.href
+   params = url.split('?')[1]
+   id = params.split('=')[1]
+   console.log(id)
+   const db = firebase.firestore()
+   db.collection("Tests").doc(id).get().then(function(doc) {
+        if (doc.exists){
+            addToDocument(1,doc)
+            addToDocument(2,doc)
+            addToDocument(3,doc)
+            addToDocument(4,doc)
+            addToDocument(5,doc)
+            let button = document.createElement("div")
+            button.classList.add("row")
+            button.classList.add("row-padding")
+            button.innerHTML=`<a href="results.html" type="button" class="btn btn-primary" onclick=sendTest(${doc.id})>Enviar</a>`
+            document.getElementById("test-body").appendChild(button)
+
+        }else{
+            console.log("doc does not exist")
+        }
+   })
+}
+
+function addToDocument(number,doc){
+    document.getElementById("test-body").appendChild(testTemplate(number,doc))
+    document.getElementById("test-body").appendChild(createHr())
+}
+
+function createHr(){
+    let hr = document.createElement("hr")
+    return hr
+}
+
+function checkURL(){
+    console.log(document.location.href)
+}
+
+function testTemplate(number,doc){
+    let div = document.createElement("div")
+    let temp = `doc.data().question${number}`
+    div.classList.add("row")
+    div.classList.add("row-padding")
+    div.innerHTML=`
+    <div class="block">
+        <h3>Pregunta ${number}</h3>
+        <article>${eval(temp).description}</article>
+    </div>
+    <div class="form-check form-check-inline radio-padding">
+        <input class="form-check-input" type="radio" name="radios${number}" id="radios${number}o1" value="option1">
+        <label class="form-check-label" for="inlineRadio1">${eval(temp).option1}</label>
+    </div>
+    <div class="form-check form-check-inline radio-padding">
+        <input class="form-check-input" type="radio" name="radios${number}" id="radios${number}o2" value="option2">
+        <label class="form-check-label" for="inlineRadio2">${eval(temp).option2}</label>
+    </div>
+    <div class="form-check form-check-inline radio-padding">
+        <input class="form-check-input" type="radio" name="radios${number}" id="radios${number}o3" value="option3">
+        <label class="form-check-label" for="inlineRadio3">${eval(temp).option3}</label>
+    </div>`
+    
+    return div
 }
