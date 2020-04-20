@@ -264,10 +264,10 @@ function createQuestionObject(question){
   }
   
 
-  function createTest(){
+ async function createTest(){
     const db = firebase.firestore()
     const company = firebase.auth().currentUser
-    db.collection('Tests').add({
+    await db.collection('Tests').add({
       companyId: company.uid,
       testName: document.getElementById("testName").value,
       question1: createQuestionObject(1),
@@ -279,6 +279,7 @@ function createQuestionObject(question){
         alert("No se pudo crear la prueba, revise todos los campos")
         console.log(err)
     })
+    window.location.href = "./tests.html"
   }
 
 function deleteEmployee(userid){
@@ -343,26 +344,55 @@ async function getCompanyName(){
     }
 }
 
-function getTests(){
+async function getTests(){
     const db = firebase.firestore()
-    const company = "2OCZqqf4SseTUtN06Uh9GIDfBSg2"
-    db.collection("Tests").where("companyId","==",company).get()
-    .then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-            testListTemplate(doc)
+    const isEmployee = (document.location.search != "")
+    if(isEmployee){
+        let id = document.location.search.split("==")[1];
+        let companyId = await db.collection("Employees").doc(id).get().then(function(doc) {
+            if(doc.exists){
+                return doc.data().company
+            }
         })
-    })
-
+        let companyName = await db.collection("Tests").where("companyId","==",companyId).get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                testListTemplate(doc,isEmployee)
+            })
+        })
+    }else {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                company = firebase.auth().currentUser.uid
+                db.collection("Tests").where("companyId","==",company).get()
+                .then(function(querySnapshot) {
+                    querySnapshot.forEach(function(doc) {
+                        testListTemplate(doc, isEmployee)
+                    })
+                })
+            }
+        })
+    }
 }
 
-function testListTemplate(doc){
+function testListTemplate(doc, isEmployee){
     var div = document.createElement("div")
     div.classList.add("card")
-    div.innerHTML=`
-            <div class="card-body justify-content-between shown-tests">
-                <p>${doc.data().testName}</p>
-                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Realizar</button>
-            </div>`
+    if(isEmployee){
+        div.innerHTML=`
+        <div class="card-body justify-content-between shown-tests">
+            <p>${doc.data().testName}</p>
+            <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Realizar</button>
+        </div>`
+    }else{
+        div.innerHTML=`
+        <div class="card-body justify-content-between shown-tests">
+            <p>${doc.data().testName}</p>
+            <div>
+                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Resultados</button>
+                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=openTest("${doc.id}")>Borrar</button>
+            </div>
+        </div>`
+    }
     document.getElementById("tests-card").appendChild(div)
 }
 
@@ -386,12 +416,16 @@ function showTest(){
             let button = document.createElement("div")
             button.classList.add("row")
             button.classList.add("row-padding")
-            button.innerHTML=`<a href="results.html" type="button" class="btn btn-primary" onclick=sendTest(${doc.id})>Enviar</a>`
+            button.innerHTML=`<a href="results.html?id=${id}" type="button" class="btn btn-primary" onclick=sendTest(${doc.id})>Enviar</a>`
             document.getElementById("test-body").appendChild(button)
         }else{
             console.log("doc does not exist")
         }
    })
+}
+
+function sendTest(docid){
+
 }
 
 function addToDocument(number,doc){

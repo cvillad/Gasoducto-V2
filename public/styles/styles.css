@@ -103,3 +103,8 @@ html,body{
 .card-header {
     display: flex;
 }
+
+.button-padding {
+    padding-left: 5%;
+    padding-right: 5%;
+}
