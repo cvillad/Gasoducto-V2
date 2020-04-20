@@ -36,6 +36,15 @@ function login(){
     })
 }
 
+function logout(){
+    firebase.auth().signOut().then(function() {
+        window.location.href=("./index.html")
+    }).catch(function(error) {
+        console.log(error)
+        alert("No se pudo cerrar la sesión")
+    })
+}
+
 function unlogged(){
     firebase.auth().onAuthStateChanged((user)=> {
         if (!user && !window.location.search) {
