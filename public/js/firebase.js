@@ -1,3 +1,5 @@
+
+
 function firebaseconfig(){
     var firebaseConfig = {
         apiKey: "AIzaSyDESlho9GRNb0Zw4ILaae-gyND9oWZ7G5I",
@@ -12,21 +14,22 @@ function firebaseconfig(){
     firebase.initializeApp(firebaseConfig);
 }
 
-var currentEmployee
+var current
 //document.getElementById("login-btn").addEventListener("click",login)
 function login(){
     email=document.getElementById('email').value
     password=document.getElementById('password').value
     firebase.auth().signInWithEmailAndPassword(email, password).then(()=> {
-        window.location.href=('./admin.html')
-        }, ()=> {
+        current=window.location.search.split("==")[1]
+        window.location.href=('./admin.html?employeeid'+current)
+        }, function authUser() {
             const db=firebase.firestore()
             db.collection("Employees").where("email", "==", email).where("password","==",password)
             .where("state","==",true).get().then((querySnapshot)=> {
-                querySnapshot.forEach(function(doc) {
+                querySnapshot.forEach((doc) =>{
                     currentEmployee=doc
-                    console.log(currentEmployee)
-                    window.location.href=("./operators.html")
+                    console.log(currentEmployee+", "+doc.id)
+                    window.location.href=("./operators.html?employeeid=="+doc.id)
                 })
             }).catch(function(error) {
                 console.log("Credenciales incorrectas: ", error);
@@ -36,10 +39,7 @@ function login(){
 
 function unlogged(){
     firebase.auth().onAuthStateChanged((user)=> {
-        console.log("console: "+user)
-        if (user) {
-
-        } else {
+        if (!user && !window.location.search) {
             window.location.href=("./index.html")
         }
     })
@@ -68,7 +68,7 @@ function createCompany(){
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
                 docNumber: document.getElementById('docNum').value
-            }).then(()=>window.location.href="./admin.html")
+            }).then(()=>window.location.href="./admin.html?employeeid"+current)
             .catch((err)=>console.log(err))
         }, (reason)=> {
             console.log(reason)
@@ -77,6 +77,19 @@ function createCompany(){
     }
 }
 
+async function getCurrentUser(){
+    uid=window.location.search.split("==")[1]
+    console.log(uid)
+    if(uid){
+        const db=firebase.firestore()
+        try{
+            return await db.collection("Employees").doc(uid).get()
+        }catch(err){
+            console.log(err)
+        }
+       
+    }
+}
 
 function recoverPassword(){
     var email = document.getElementById('email').value
@@ -110,7 +123,6 @@ function writeEmployees(){
 }
 
 function addEmployee(){
-    console.log("hpta")
     const database = firebase.firestore();
     email=document.querySelector('#email').value
     if(validateEmail(email)){
@@ -176,7 +188,6 @@ function updateEmployee(id){
     document.querySelector(".accept-btn").ui=id
     const db = firebase.firestore()
     getEmployee(id).then((employee)=>{
-        console.log("caremonda: "+employee)
         document.querySelector("#password").value=employee.password
         document.querySelector("#email").value=employee.email
         document.querySelector("#name").value=employee.name
