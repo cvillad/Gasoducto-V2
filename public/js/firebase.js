@@ -1,5 +1,3 @@
-
-
 function firebaseconfig(){
     var firebaseConfig = {
         apiKey: "AIzaSyDESlho9GRNb0Zw4ILaae-gyND9oWZ7G5I",
@@ -21,7 +19,7 @@ function login(){
     password=document.getElementById('password').value
     firebase.auth().signInWithEmailAndPassword(email, password).then(()=> {
         current=window.location.search.split("==")[1]
-        window.location.href=('./admin.html?employeeid'+current)
+        window.location.href=('./admin.html')
         }, function authUser() {
             const db=firebase.firestore()
             db.collection("Employees").where("email", "==", email).where("password","==",password)
@@ -31,8 +29,9 @@ function login(){
                     console.log(currentEmployee+", "+doc.id)
                     window.location.href=("./employeeHome.html?employeeid=="+doc.id)
                 })
-            }).catch(function(error) {
-                console.log("Credenciales incorrectas: ", error);
+            })
+            .catch(function(error) {
+                alert("Credenciales incorrectas")
             })
     })
 }
@@ -67,8 +66,10 @@ function createCompany(){
                 email: company.email,
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
-                docNumber: document.getElementById('docNum').value
-            }).then(()=>window.location.href="./admin.html?employeeid"+current)
+                docType: document.querySelector("#typeDoc").value,
+                docNumber: document.getElementById('docNum').value,
+                enterpriseName: document.querySelector("#enterprise").value
+            }).then(()=>window.location.href=("./admin.html"))
             .catch((err)=>console.log(err))
         }, (reason)=> {
             console.log(reason)
