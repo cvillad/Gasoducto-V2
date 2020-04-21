@@ -14,25 +14,30 @@
     <script>firebaseconfig()</script>
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/styles.css">
+    <script>unlogged()</script>
     <title>Test</title>
   </head>
   <body>
-    <nav class="navbar custom-nav navbar-light bg-light justify-content-between">
-      <a class="navbar-brand">Test</a>
-      <form class="form-inline">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-      </form>
-    </nav>
-      <div class="container-fluid">
-        <div class="row h-100">
-          <div class="col-sm-12 vert-cent">
-            <div class="card test-card">
-              <div class="card-body scroll2" id="test-body">
-                <script>showTest()</script>
-              </div>
-            </div>
+    <nav class="navbar navbar-expand-lg custom-nav navbar-light bg-light">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <div id="navbar-title">
+            <script>getCompanyName()</script>
           </div>
-        </div>
+          <li class="nav-item dropdown account">
+            <a class="nav-link dropdown-toggle account" href="" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Cuenta
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" onclick="logout()" href="">Cerrar sesión</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

@@ -12,6 +12,18 @@ html,body{
     margin-bottom: 10px; /* Added */
 }
 
+.navbar-nav{
+    width: 100%;
+}
+
+.account{
+    margin-left: auto;
+}
+
+.dropdown-menu{
+    left: -70px;
+}
+
 .container-fluid {
     height: 100%
   }
@@ -77,8 +89,17 @@ html,body{
     max-width:250px;
 }
 
+img{
+    border-radius: 50%;
+}
+
 .card-padding {
     padding: 15px;
+}
+
+.profile-img{
+    height: 40px;
+    width: 45px;
 }
 
 .shown-tests {

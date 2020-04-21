@@ -22,12 +22,13 @@ function login(){
         window.location.href=('./admin.html')
         }, function authUser() {
             const db=firebase.firestore()
-            db.collection("Employees").where("email", "==", email).where("password","==",password)
-            .where("state","==",true).get().then((querySnapshot)=> {
+            db.collection("Employees").where("email", "==", email).get().then((querySnapshot)=> {
                 querySnapshot.forEach((doc) =>{
-                    currentEmployee=doc
-                    console.log(currentEmployee+", "+doc.id)
-                    window.location.href=("./employeeHome.html?employeeid=="+doc.id)
+                    if(doc.data().password!=password){
+                        alert("Contraseña incorrecta")
+                    }else if(!doc.data().state){
+                        alert("Ha sido deshabilitado")
+                    }else window.location.href=("./employeeHome.html?employeeid=="+doc.id)
                 })
             })
             .catch(function(error) {
@@ -37,11 +38,9 @@ function login(){
 }
 
 function logout(){
-    firebase.auth().signOut().then(function() {
-        window.location.href=("./index.html")
-    }).catch(function(error) {
-        console.log(error)
-        alert("No se pudo cerrar la sesión")
+    firebase.auth().signOut().then(()=>window.location.href="./index.html")
+    .catch(function(error) {
+        window.location.href="./index.html"
     })
 }
 
@@ -57,6 +56,7 @@ var image
 function loadImage(event){
     image=event.target.files[0]
 }
+
 
 function createCompany(){
     // Get a reference to the database service
@@ -102,8 +102,6 @@ async function getCurrentUser(){
 }
 
 function createEmployee(){
-    // Get a reference to the database service
-    
     const database = firebase.firestore();
     database.collection('Employees').add({
         email: document.getElementById('email').value,
@@ -152,7 +150,6 @@ function writeEmployees(){
 }
 
 function addEmployee(){
-    
     const database = firebase.firestore();
     email=document.querySelector('#email').value
     if(validateEmail(email)){
@@ -207,8 +204,7 @@ function edit(evt){
         state: document.querySelector("#inputActive").checked
     }).then(()=>{
         console.log("el ney: "+id)
-        const ref=firebase.storage().ref("images/employees/"+id)
-        ref.put(image)
+        firebase.storage().ref("images/employees/"+id).put(image)
         cleanFormUser()
     })
     .catch((err)=>console.log("catch: "+ err))
@@ -227,20 +223,39 @@ function updateEmployee(id){
         document.querySelector("#name").value=employee.name
         document.querySelector("#address").value=employee.address
         document.querySelector("#inputActive").checked=employee.state
-        loadImageFromDB(id)
+        loadEmployeeImage(id)
     }).catch((err)=>console.log("edit error: "+err))
 }
 
-function loadImageFromDB(id){
+function loadEmployeeImage(id){
     firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
-        // `url` is the download URL for 'images/stars.jpg'
-
-        // Or inserted into an <img> element:
-    var img = document.getElementById('op-img');
+    const img = document.getElementById('op-img');
     img.src = url; 
     }).catch(function(error) {
-    // Handle any errors
+        console.log(error)
     });
+}
+
+function loadProfileImage(id){
+    if (!window.location.search[0]) {
+        firebase.storage().ref().child('images/'+id).getDownloadURL().then(function(url) {
+        const img = document.querySelector('.profile-img');
+        console.log(img)
+        img.src = url;
+        }).catch(function(error) {
+            console.log(error)
+        });
+    }else{
+        firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
+        const img = document.querySelector('.profile-img');
+        console.log(img)
+        img.src = url;
+        }).catch(function(error) {
+            console.log(error)
+        });
+    }
+
+    
 }
 
 
@@ -304,40 +319,42 @@ function validateEmail(mail)
 async function getCompanyName(){
     const db = firebase.firestore()
     //console.log(document.getElementById("navbar-title"))
-    if(document.location.search == "?employeeidundefined") {
+    if(!document.location.search) {
+        console.log("monda")
         firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
                 const companyId = firebase.auth().currentUser.uid
                 db.collection("Companies").where("id","==",companyId).get().then(function(querySnapshot){
                     querySnapshot.forEach(function(doc) {
-                        if(doc.exists){
-                            let div = document.createElement("div")
-                            div.innerHTML = `<a class="navbar-brand">${doc.data().enterpriseName}</a>`
-                            document.getElementById("navbar-title").appendChild(div) 
+                    if(doc.exists){
+                        let div = document.createElement("div")
+                        div.innerHTML = `<img class="profile-img">
+                        <a class="navbar-brand">${doc.data().enterpriseName}</a>`
+                        nav=document.getElementById("navbar-title")
+                        nav.appendChild(div)
+                        loadProfileImage(doc.data().id)
                       }
                     })
                 })
               // User is signed in.
-            } else {
-              // No user is signed in.
             }
         });
     }else{
         let id = document.location.search.split("==")[1];
-        let companyId = await db.collection("Employees").doc(id).get().then(function(doc) {
+        employee = await db.collection("Employees").doc(id).get().then(function(doc) {
             if(doc.exists){
-                //console.log(doc.data().company);
-                return doc.data().company
-                //console.log(companyId)
+                return doc
             }
         })
-        let companyName = await db.collection("Companies").where("id","==",companyId).get().then(function(querySnapshot) {
+        await db.collection("Companies").where("id","==",employee.data().company).get().then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
                 if (doc.exists){
-                    console.log(document.getElementById("navbar-title"))
                     let div = document.createElement("div")
-                    div.innerHTML = `<a class="navbar-brand">${doc.data().enterpriseName}</a>`
-                    document.getElementById("navbar-title").appendChild(div)
+                        div.innerHTML = `<img class="profile-img">
+                        <a class="navbar-brand">${doc.data().enterpriseName+" - "+employee.data().name}</a>`
+                        nav=document.getElementById("navbar-title")
+                        nav.appendChild(div)
+                        loadProfileImage(employee.id)
                 }
             })
         })

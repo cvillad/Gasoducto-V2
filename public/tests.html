@@ -24,22 +24,33 @@
   <body>
 
     <nav class="navbar navbar-expand-lg custom-nav navbar-light bg-light">
-        <a class="navbar-brand">Test</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="./admin.html">Ver empleados <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" href="#">Ver cuestionarios</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
+      
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        
+        <ul class="navbar-nav">
+          <div id="navbar-title">
+            <script>getCompanyName()</script>
+          </div>
+          <li class="nav-item active">
+            <a class="nav-link" href="./admin.html">Ver empleados <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./tests.html" >Ver cuestionarios</a>
+          </li>
+          <li class="nav-item dropdown account">
+            <a class="nav-link dropdown-toggle account" href="" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Cuenta
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" onclick="logout()" href="">Cerrar sesión</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
       
     <div class="container-fluid ">
       <div class="row h-100">
