@@ -485,7 +485,7 @@ function showTest(){
             let button = document.createElement("div")
             button.classList.add("row")
             button.classList.add("row-padding")
-            button.innerHTML=`<a type="button" class="btn btn-primary" onclick=sendTest("${employeeId}","${doc.id}")>Enviar</a>`
+            button.innerHTML=`<button type="button" data-toggle="modal" data-target="#results-modal" class="btn btn-primary" onclick=sendTest("${employeeId}","${doc.id}")>Enviar</button>`
             document.getElementById("test-body").appendChild(button)
         }else{
             console.log("doc does not exist")
@@ -506,6 +506,10 @@ async function sendTest(employeeId, docId){
         }
     })
     let acum = calculateResult(testDoc)
+
+    let div = document.createElement("div")
+    div.innerHTML=`<h1>${acum} de 5 puntos</h1>`
+    document.getElementById("points").appendChild(div)
 
     let temp = employeeDoc.data().tests
     temp.push(createTestObject(testDoc,acum))
@@ -563,7 +567,7 @@ function calculateQuestionResult(doc,number){
     } else{
         acum = 0
     }
-    return parseInt(acum,10)
+    return parseFloat(acum)
 }
 
 function addToDocument(number,doc){
