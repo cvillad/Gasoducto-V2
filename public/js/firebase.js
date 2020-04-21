@@ -13,7 +13,6 @@ function firebaseconfig(){
 }
 
 var current
-//document.getElementById("login-btn").addEventListener("click",login)
 function login(){
     email=document.getElementById('email').value
     password=document.getElementById('password').value
@@ -153,16 +152,12 @@ function writeEmployees(){
             if(firebase.auth().currentUser.uid==doc.data().company){
                 const row = document.createElement("div")
                 row.classList.add("row")
-                row.innerHTML=`
-                <div class="card-body justify-content-between shown-tests">
-                    <p>${doc.data().name}</p>
-                    <div>
-                        <button class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal" onclick=updateEmployee("${doc.id}")>Editar</button>
-                        <button onclick=deleteEmployee("${doc.id}") class="btn btn-danger delete-btn" type="button"  >
-                        <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </div>`
+                row.innerHTML=`<div class="col">${doc.data().name}</div>
+                <div class="col text-right"><button onclick=showEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#edit-user-modal">
+                Editar
+                </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
+                <i class="fas fa-trash-alt"></i>
+                </button></div>`
                 document.querySelector(".card-body").appendChild(row)
             }
         })
@@ -181,20 +176,18 @@ function addEmployee(){
             company: firebase.auth().currentUser.uid,
             state: true,
             tests: []
-        }).then((doc)=> {
-            const ref=firebase.storage().ref("images/employees/"+doc.id)
-            ref.put(image)
-            cleanFormUser()
-        })
-        .catch((err)=>{
+        }).catch((err)=>{
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
                 text: 'Falló al crear empleado',
             })
-        }).finally(()=>{
-            document.querySelector(".accept-btn").removeEventListener("click",addEmployee)
-    }) 
+        }).then((doc)=> {
+            const ref=firebase.storage().ref("images/employees/"+doc.id)
+            ref.put(image)
+            cleanFormUser()
+        })
+        
     }else{
         Swal.fire({
             icon: 'error',
@@ -209,12 +202,7 @@ function cleanFormUser(){
     document.querySelector("#email").value=""
     document.querySelector("#name").value=""
     document.querySelector("#address").value=""
-}
-
-function createEmployee(){
-    document.querySelector("#op-img").style.display="none"
-    document.querySelector("#modal-title").innerHTML="Crear empleado"
-    document.querySelector(".accept-btn").addEventListener("click",addEmployee)
+    document.querySelector("").value=""
 }
 
 async function getEmployee(id){
@@ -224,42 +212,36 @@ async function getEmployee(id){
     return employee.data()
 }
 
-function edit(evt){
+function editEmployee(id){
     const db=firebase.firestore()
-    id=evt.currentTarget.ui
     db.collection("Employees").doc(id).update({
-        email: document.querySelector('#email').value,
-        name: document.querySelector('#name').value,
-        address: document.querySelector("#address").value,
-        password: document.querySelector('#password').value,
+        email: document.querySelector('#edit-email').value,
+        name: document.querySelector('#edit-name').value,
+        address: document.querySelector("#edit-address").value,
+        password: document.querySelector('#edit-password').value,
         state: document.querySelector("#inputActive").checked
-    }).then(()=>{
-        firebase.storage().ref("images/employees/"+id).put(image)
-        cleanFormUser()
-    })
-    .catch((err)=>{{
+    }).catch(()=>{{
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
             text: 'Falló al editar empleado',
         })
-    }})
-    .finally(()=>document.querySelector(".accept-btn").removeEventListener("click",edit))
+    }}).then(()=>{
+        firebase.storage().ref("images/employees/"+id).put(image)
+    })
 }
 
-function updateEmployee(id){
-    document.querySelector("#op-img").style.display="block"
-    document.querySelector("#modal-title").innerHTML="Editar empleado"
-    document.querySelector(".accept-btn").addEventListener("click",edit)
-    document.querySelector(".accept-btn").ui=id
-    const db = firebase.firestore()
+function showEmployee(id){
     getEmployee(id).then((employee)=>{
-        document.querySelector("#password").value=employee.password
-        document.querySelector("#email").value=employee.email
-        document.querySelector("#name").value=employee.name
-        document.querySelector("#address").value=employee.address
+        document.querySelector("#edit-password").value=employee.password
+        document.querySelector("#edit-email").value=employee.email
+        document.querySelector("#edit-name").value=employee.name
+        document.querySelector("#edit-address").value=employee.address
         document.querySelector("#inputActive").checked=employee.state
         loadEmployeeImage(id)
+        console.log("document: "+id)
+        document.querySelector(".edit-footer").innerHTML=`<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick=editEmployee("${id}") data-dismiss="modal">Aceptar</button>`
     }).catch((err)=>console.log("edit error: "+err))
 }
 
@@ -331,7 +313,7 @@ function createQuestionObject(question){
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: 'No se pudo crear la prueba, revise todos los campos',
+            text: 'No se pudo f la prueba, revise todos los campos',
         })
 
         console.log(err)
@@ -449,8 +431,8 @@ function testListTemplate(doc, isEmployee){
         <div class="card-body justify-content-between shown-tests">
             <p>${doc.data().testName}</p>
             <div>
-                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openResults("${doc.id}")>Resultados</button>
-                <button class="btn btn-outline-danger my-2 my-sm-0" type="button" onclick=deleteTest("${doc.id}")>Borrar</button>
+                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Resultados</button>
+                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=openTest("${doc.id}")>Borrar</button>
             </div>
         </div>`
     }

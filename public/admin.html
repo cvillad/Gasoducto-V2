@@ -58,7 +58,7 @@
           <div class="card operator-card">
             <div class="card-header justify-content-between">
               <h4>Nombre Operador</h4>
-              <button onclick="createEmployee()" type="button" class="btn btn-primary add-btn" data-toggle="modal" data-target="#create-user-modal">
+              <button type="button" class="btn btn-primary add-btn" data-toggle="modal" data-target="#create-user-modal">
                 Añadir
               </button>
             </div>
@@ -76,7 +76,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modal-title"> </h5>
+            <h5 class="modal-title" id="modal-title">Crear empleado</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -104,14 +104,54 @@
                 <label for="image">Foto operador</label>
                 <input type="file" onchange="loadImage(event)" class="form-control-file" id="image">
               </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cleanFormUser()" data-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" onclick="addEmployee()"  data-dismiss="modal">Aceptar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="edit-user-modal" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal-title">Editar empleado</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="inputName">Nombre completo</label>
+                <input id='edit-name' type="text" class="form-control" id="inputName" placeholder="Nombre">
+              </div>
+              <div class="form-group">
+                <label for="inputEmail">Correo electrónico</label>
+                <input id='edit-email' type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Correo electrónico">
+                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+              </div>
+              <div class="form-group">
+                <label for="inputAddress">Dirección</label>
+                <input id='edit-address' type="text" class="form-control" id="inputAddress" placeholder="Dirección">
+              </div>
+              <div class="form-group">
+                <label for="inputPassword">Password</label>
+                <input id='edit-password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
+              </div>
+              <div class="form-group">
+                <label for="image">Foto operador</label>
+                <input type="file" onchange="loadImage(event)" class="form-control-file" id="edit-image">
+              </div>
               <img id="op-img" src="">
               <div class="form-check">
                 <input type="checkbox" checked class="form-check-input" id="inputActive">
                 <label class="form-check-label" for="inputCheck">Activo</label>
               </div>
-              <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cleanFormUser()" id="close-createuser" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary accept-btn" data-dismiss="modal">Aceptar</button>
+              <div class="modal-footer edit-footer">
               </div>
             </form>
           </div>
@@ -122,6 +162,7 @@
     
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
