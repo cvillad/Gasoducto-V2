@@ -325,7 +325,8 @@ function createQuestionObject(question){
       question2: createQuestionObject(2),
       question3: createQuestionObject(3),
       question4: createQuestionObject(4),
-      question5: createQuestionObject(5)
+      question5: createQuestionObject(5),
+      employees: []
     }).catch(function(err) {
         Swal.fire({
             icon: 'error',
@@ -449,11 +450,21 @@ function testListTemplate(doc, isEmployee){
             <p>${doc.data().testName}</p>
             <div>
                 <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openResults("${doc.id}")>Resultados</button>
-                <button class="btn btn-outline-danger my-2 my-sm-0" >Borrar</button>
+                <button class="btn btn-outline-danger my-2 my-sm-0" type="button" onclick=deleteTest("${doc.id}")>Borrar</button>
             </div>
         </div>`
     }
     document.getElementById("tests-card").appendChild(div)
+}
+
+function deleteTest(docID){
+    const db = firebase.firestore();
+    db.collection("Tests").doc(docID).delete().then(()=>{
+        console.log("Test successfully deleted!");
+    })
+    .catch((error)=> {
+        console.error("Error removing document: ", error);
+    })
 }
 
 function openTest(docID, employeeId){
@@ -494,27 +505,50 @@ async function sendTest(employeeId, docId){
             return doc
         }
     })
+    let acum = calculateResult(testDoc)
+
     let temp = employeeDoc.data().tests
-    temp.push(createTestObject(testDoc,employeeDoc))
+    temp.push(createTestObject(testDoc,acum))
+    console.log(temp)
     await db.collection("Employees").doc(employeeId).update({
         tests: temp
     }).then(function(doc) {
-        console.log("added")
+        console.log("added test to employee")
+    })
+    
+    let temp2 = testDoc.data().employees
+    temp2.push(createEmployeeObject(employeeDoc,acum))
+    db.collection("Tests").doc(testId).update({
+        employees: temp2
+    }).then(function (doc) {
+        console.log("added employee to test")
     })
 }
 
-function createTestObject(testDoc,employeeDoc){
+function createTestObject(testDoc,acum){
+    let temp = {
+        testId: testDoc.id,
+        acum: acum
+    }
+    return temp
+}
+
+function createEmployeeObject(employeeDoc,acum){
+    let temp = {
+        employeeId: employeeDoc.id,
+        acum: acum
+    }
+    return temp
+}
+
+function calculateResult(testDoc){
     let acum = 0;
     acum = acum + calculateQuestionResult(testDoc,1)
     acum = acum + calculateQuestionResult(testDoc,2)
     acum = acum + calculateQuestionResult(testDoc,3)
     acum = acum + calculateQuestionResult(testDoc,4)
     acum = acum + calculateQuestionResult(testDoc,5)
-    let temp = {
-        testId: testDoc.id,
-        acum: acum
-    }
-    return temp
+    return acum
 }
 
 function calculateQuestionResult(doc,number){
@@ -529,7 +563,7 @@ function calculateQuestionResult(doc,number){
     } else{
         acum = 0
     }
-    return acum
+    return parseInt(acum,10)
 }
 
 function addToDocument(number,doc){
@@ -568,6 +602,5 @@ function testTemplate(number,doc){
         <input class="form-check-input" type="radio" name="radios${number}" id="radios${number}o3" value="option3">
         <label class="form-check-label" for="inlineRadio3">${eval(temp).option3}</label>
     </div>`
-    
     return div
 }
