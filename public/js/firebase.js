@@ -25,14 +25,33 @@ function login(){
             db.collection("Employees").where("email", "==", email).get().then((querySnapshot)=> {
                 querySnapshot.forEach((doc) =>{
                     if(doc.data().password!=password){
-                        alert("Contraseña incorrecta")
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Contraseña incorrecta',
+                        })
                     }else if(!doc.data().state){
-                        alert("Ha sido deshabilitado")
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Ha sido bloqueado por el administrador',
+                        })
                     }else window.location.href=("./employeeHome.html?employeeid=="+doc.id)
                 })
-            })
-            .catch(function(error) {
-                alert("Credenciales incorrectas")
+            }).then(()=>{
+                if(!doc){
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Credenciales incorrectas',
+                    })
+                }
+            }).catch(function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Credenciales incorrectas',
+                  })
             })
     })
 }
@@ -79,17 +98,31 @@ function createCompany(){
                 docNumber: document.getElementById('docNum').value,
                 enterpriseName: document.querySelector("#enterprise").value
             }).then(()=>window.location.href=("./admin.html"))
-            .catch((err)=>console.log(err))
-        }, (reason)=> {
-            console.log(reason)
-            alert('Registro fallido')
+            .catch(()=>{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Registro fallido',
+                })
+            })
+        }, ()=> {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Registro fallido',
+            })
+        })
+    }else{
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Dirección de correo inválida',
         })
     }
 }
 
 async function getCurrentUser(){
     uid=window.location.search.split("==")[1]
-    console.log(uid)
     if(uid){
         const db=firebase.firestore()
         try{
@@ -99,22 +132,6 @@ async function getCurrentUser(){
         }
        
     }
-}
-
-function createEmployee(){
-    const database = firebase.firestore();
-    database.collection('Employees').add({
-        email: document.getElementById('email').value,
-        name: document.getElementById('name').value,
-        password: document.getElementById('password').value,
-        company: firebase.currentUser().uid
-    }).then(function(val){
-        document.querySelector(".card-body").innerHTML = "";
-        getEmployees()
-    })
-    .catch(function(err){
-        console.log(err)
-    });  
 }
 
 function recoverPassword(){
@@ -134,7 +151,6 @@ function writeEmployees(){
         document.querySelector(".card-body").innerHTML = "";
         querySnapshot.forEach((doc)=> {
             if(firebase.auth().currentUser.uid==doc.data().company){
-                console.log(doc.id)
                 const row = document.createElement("div")
                 row.classList.add("row")
                 row.innerHTML=`<div class="col">${doc.data().name}</div>
@@ -166,10 +182,20 @@ function addEmployee(){
             cleanFormUser()
         })
         .catch((err)=>{
-            console.log(err)
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Falló al crear empleado',
+            })
         }).finally(()=>{
             document.querySelector(".accept-btn").removeEventListener("click",addEmployee)
     }) 
+    }else{
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Dirección de correo inválida',
+        })
     }
 }
 
@@ -203,11 +229,16 @@ function edit(evt){
         password: document.querySelector('#password').value,
         state: document.querySelector("#inputActive").checked
     }).then(()=>{
-        console.log("el ney: "+id)
         firebase.storage().ref("images/employees/"+id).put(image)
         cleanFormUser()
     })
-    .catch((err)=>console.log("catch: "+ err))
+    .catch((err)=>{{
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Falló al editar empleado',
+        })
+    }})
     .finally(()=>document.querySelector(".accept-btn").removeEventListener("click",edit))
 }
 
@@ -291,7 +322,12 @@ function createQuestionObject(question){
       question4: createQuestionObject(4),
       question5: createQuestionObject(5)
     }).catch(function(err) {
-        alert("No se pudo crear la prueba, revise todos los campos")
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'No se pudo crear la prueba, revise todos los campos',
+        })
+
         console.log(err)
     })
     window.location.href = "./tests.html"
@@ -310,10 +346,10 @@ function deleteEmployee(userid){
 function validateEmail(mail) 
 {
  if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(document.querySelector("#email").value)){
-    return (true)
+    return true
   }
-    alert("You have entered an invalid email address!")
-    return (false)
+  
+    return false
 }
 
 async function getCompanyName(){
