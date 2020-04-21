@@ -153,12 +153,16 @@ function writeEmployees(){
             if(firebase.auth().currentUser.uid==doc.data().company){
                 const row = document.createElement("div")
                 row.classList.add("row")
-                row.innerHTML=`<div class="col">${doc.data().name}</div>
-                <div class="col text-right"><button onclick=updateEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal">
-                Editar
-                </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
-                <i class="fas fa-trash-alt"></i>
-                </button></div>`
+                row.innerHTML=`
+                <div class="card-body justify-content-between shown-tests">
+                    <p>${doc.data().name}</p>
+                    <div>
+                        <button class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal" onclick=updateEmployee("${doc.id}")>Editar</button>
+                        <button onclick=deleteEmployee("${doc.id}") class="btn btn-danger delete-btn" type="button"  >
+                        <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>`
                 document.querySelector(".card-body").appendChild(row)
             }
         })
@@ -175,7 +179,8 @@ function addEmployee(){
             name: document.querySelector('#name').value,
             password: document.querySelector('#password').value,
             company: firebase.auth().currentUser.uid,
-            state: true
+            state: true,
+            tests: []
         }).then((doc)=> {
             const ref=firebase.storage().ref("images/employees/"+doc.id)
             ref.put(image)
@@ -430,36 +435,36 @@ async function getTests(){
 function testListTemplate(doc, isEmployee){
     var div = document.createElement("div")
     div.classList.add("card")
+    let employeeId = document.location.search.split("==")[1];
     if(isEmployee){
+        console.log(doc.id)
         div.innerHTML=`
         <div class="card-body justify-content-between shown-tests">
             <p>${doc.data().testName}</p>
-            <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Realizar</button>
+            <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}","${employeeId}")>Realizar</button>
         </div>`
     }else{
         div.innerHTML=`
         <div class="card-body justify-content-between shown-tests">
             <p>${doc.data().testName}</p>
             <div>
-                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Resultados</button>
-                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=openTest("${doc.id}")>Borrar</button>
+                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openResults("${doc.id}")>Resultados</button>
+                <button class="btn btn-outline-danger my-2 my-sm-0" >Borrar</button>
             </div>
         </div>`
     }
     document.getElementById("tests-card").appendChild(div)
 }
 
-function openTest(docID){
-   window.location.href=(`test.html?id=${docID}`)
+function openTest(docID, employeeId){
+   window.location.href=(`test.html?employeeid==${employeeId}?id==${docID}`)
 }
 
 function showTest(){
-   url = window.location.href
-   params = url.split('?')[1]
-   id = params.split('=')[1]
-   console.log(id)
+   employeeId = window.location.href.split('?')[1].split('==')[1]
+   testId = window.location.href.split('?')[2].split('==')[1]
    const db = firebase.firestore()
-   db.collection("Tests").doc(id).get().then(function(doc) {
+   db.collection("Tests").doc(testId).get().then(function(doc) {
         if (doc.exists){
             addToDocument(1,doc)
             addToDocument(2,doc)
@@ -469,7 +474,7 @@ function showTest(){
             let button = document.createElement("div")
             button.classList.add("row")
             button.classList.add("row-padding")
-            button.innerHTML=`<a href="results.html?id=${id}" type="button" class="btn btn-primary" onclick=sendTest(${doc.id})>Enviar</a>`
+            button.innerHTML=`<a type="button" class="btn btn-primary" onclick=sendTest("${employeeId}","${doc.id}")>Enviar</a>`
             document.getElementById("test-body").appendChild(button)
         }else{
             console.log("doc does not exist")
@@ -477,8 +482,54 @@ function showTest(){
    })
 }
 
-function sendTest(docid){
+async function sendTest(employeeId, docId){
+    const db = firebase.firestore()
+    const testDoc = await db.collection("Tests").doc(docId).get().then(function(doc) {
+        if (doc.exists){
+            return doc
+        }
+    })
+    const employeeDoc = await db.collection("Employees").doc(employeeId).get().then(function(doc) {
+        if (doc.exists){
+            return doc
+        }
+    })
+    let temp = employeeDoc.data().tests
+    temp.push(createTestObject(testDoc,employeeDoc))
+    await db.collection("Employees").doc(employeeId).update({
+        tests: temp
+    }).then(function(doc) {
+        console.log("added")
+    })
+}
 
+function createTestObject(testDoc,employeeDoc){
+    let acum = 0;
+    acum = acum + calculateQuestionResult(testDoc,1)
+    acum = acum + calculateQuestionResult(testDoc,2)
+    acum = acum + calculateQuestionResult(testDoc,3)
+    acum = acum + calculateQuestionResult(testDoc,4)
+    acum = acum + calculateQuestionResult(testDoc,5)
+    let temp = {
+        testId: testDoc.id,
+        acum: acum
+    }
+    return temp
+}
+
+function calculateQuestionResult(doc,number){
+    let acum = 0
+    let temp = `doc.data().question${number}`
+    if ((document.getElementById(`radios${number}o1`).checked == true) && (document.getElementById(`radios${number}o1`).value == eval(temp).correct)){
+        acum = eval(temp).weight
+    } else if ((document.getElementById(`radios${number}o2`).checked == true) && (document.getElementById(`radios${number}o2`).value == eval(temp).correct)){
+        acum = eval(temp).weight
+    } else if ((document.getElementById(`radios${number}o3`).checked == true) && (document.getElementById(`radios${number}o3`).value == eval(temp).correct)){
+        acum = eval(temp).weight
+    } else{
+        acum = 0
+    }
+    return acum
 }
 
 function addToDocument(number,doc){
