@@ -151,17 +151,78 @@ function writeEmployees(){
         querySnapshot.forEach((doc)=> {
             if(firebase.auth().currentUser.uid==doc.data().company){
                 const row = document.createElement("div")
-                row.classList.add("row")
-                row.innerHTML=`<div class="col">${doc.data().name}</div>
-                <div class="col text-right"><button onclick=showEmployee("${doc.id}") type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#edit-user-modal">
-                Editar
-                </button><button onclick=deleteEmployee("${doc.id}") type="button" class="btn btn-danger delete-btn">
-                <i class="fas fa-trash-alt"></i>
-                </button></div>`
+                row.classList.add("card")
+                row.innerHTML=`
+                <div class="card-body justify-content-between shown-tests">
+                    <p>${doc.data().name}</p>
+                    <div>
+                        <button class="btn btn-primary edit-btn" data-toggle="modal" data-target="#user-results-modal" onclick=showUserResults("${doc.id}")>Ver resultados</button>
+                        <button class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal" onclick=updateEmployee("${doc.id}")>Editar</button>
+                        <button onclick=deleteEmployee("${doc.id}") class="btn btn-danger delete-btn" type="button"  >
+                        <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>`
                 document.querySelector(".card-body").appendChild(row)
             }
         })
     })
+}
+
+async function showUserResults(employeeId){
+    const db = firebase.firestore();
+    const employee = await db.collection("Employees").doc(employeeId).get().then(function(doc) {
+        if (doc.exists){
+            return doc
+        }
+    })
+    let array = employee.data().tests
+    let div = document.createElement("div")
+    div.classList.add("card")
+    if (array.length == 0){
+        div.innerHTML=`
+        <div class="card-body justify-content-between shown-tests">
+            <h2>No hay resultados disponibles</h2>
+        </div>`
+    } else {
+        array.forEach(function(entry){
+            div.innerHTML=`
+            <div class="card-body justify-content-between shown-tests">
+                <p>${entry.testName}</p>
+                <p>${entry.acum} puntos de 5</p>
+            </div>`
+        })
+    }
+    document.getElementById("results-modal-body").innerHTML=""
+    document.getElementById("results-modal-body").appendChild(div)
+}
+
+async function showTestResults(testId){
+    const db = firebase.firestore();
+    const test = await db.collection("Tests").doc(testId).get().then(function(doc) {
+        if (doc.exists){
+            return doc
+        }
+    })
+    let array = test.data().employees
+    let div = document.createElement("div")
+    div.classList.add("card")
+    if (array.length == 0){
+        div.innerHTML=`
+        <div class="card-body justify-content-between shown-tests">
+            <h2>No hay resultados disponibles</h2>
+        </div>`
+    } else {
+        array.forEach(function(entry){
+            div.innerHTML=`
+            <div class="card-body justify-content-between shown-tests">
+                <p>${entry.employeeName}</p>
+                <p>${entry.acum} puntos de 5</p>
+            </div>`
+        })
+    }
+    document.getElementById("result-users-body").innerHTML=""
+    document.getElementById("result-users-body").appendChild(div)
 }
 
 function addEmployee(){
@@ -264,7 +325,9 @@ function loadProfileImage(id){
             console.log(error)
         });
     }else{
-        firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
+        let split = document.location.search.split("?")[1];
+        let employeeId = split.split("==")[1]
+        firebase.storage().ref().child('images/employees/'+employeeId).getDownloadURL().then(function(url) {
         const img = document.querySelector('.profile-img');
         console.log(img)
         img.src = url;
@@ -364,7 +427,8 @@ async function getCompanyName(){
             }
         });
     }else{
-        let id = document.location.search.split("==")[1];
+        let split = document.location.search.split("?")[1];
+        let id = split.split("==")[1];
         employee = await db.collection("Employees").doc(id).get().then(function(doc) {
             if(doc.exists){
                 return doc
@@ -431,13 +495,14 @@ function testListTemplate(doc, isEmployee){
         <div class="card-body justify-content-between shown-tests">
             <p>${doc.data().testName}</p>
             <div>
-                <button class="btn btn-outline-primary my-2 my-sm-0" onclick=openTest("${doc.id}")>Resultados</button>
-                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=openTest("${doc.id}")>Borrar</button>
+                <button class="btn btn-outline-primary my-2 my-sm-0" data-toggle="modal" data-target="#result-users-modal" onclick=showTestResults("${doc.id}")>Resultados</button>
+                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=deleteTest("${doc.id}")>Borrar</button>
             </div>
         </div>`
     }
     document.getElementById("tests-card").appendChild(div)
 }
+
 
 function deleteTest(docID){
     const db = firebase.firestore();
@@ -467,7 +532,7 @@ function showTest(){
             let button = document.createElement("div")
             button.classList.add("row")
             button.classList.add("row-padding")
-            button.innerHTML=`<button type="button" data-toggle="modal" data-target="#results-modal" class="btn btn-primary" onclick=sendTest("${employeeId}","${doc.id}")>Enviar</button>`
+            button.innerHTML=`<button type="button"  class="btn btn-primary" onclick=sendTest("${employeeId}","${doc.id}")>Enviar</button>`
             document.getElementById("test-body").appendChild(button)
         }else{
             console.log("doc does not exist")
@@ -492,7 +557,7 @@ async function sendTest(employeeId, docId){
     let div = document.createElement("div")
     div.innerHTML=`<h1>${acum} de 5 puntos</h1>`
     document.getElementById("points").appendChild(div)
-
+    $('#results-modal').modal('show');
     let temp = employeeDoc.data().tests
     temp.push(createTestObject(testDoc,acum))
     console.log(temp)
@@ -514,6 +579,7 @@ async function sendTest(employeeId, docId){
 function createTestObject(testDoc,acum){
     let temp = {
         testId: testDoc.id,
+        testName: testDoc.data().testName,
         acum: acum
     }
     return temp
@@ -522,6 +588,7 @@ function createTestObject(testDoc,acum){
 function createEmployeeObject(employeeDoc,acum){
     let temp = {
         employeeId: employeeDoc.id,
+        employeeName: employeeDoc.data().name,
         acum: acum
     }
     return temp

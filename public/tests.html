@@ -34,10 +34,10 @@
           <div id="navbar-title">
             <script>getCompanyName()</script>
           </div>
-          <li class="nav-item active">
+          <li class="nav-item">
             <a class="nav-link" href="./admin.html">Ver empleados <span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item active">
             <a class="nav-link" href="./tests.html" >Ver cuestionarios</a>
           </li>
           <li class="nav-item dropdown account">
@@ -77,52 +77,23 @@
       
 
 
-    <div class="modal fade" id="create-user-modal" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">
+    <div class="modal fade" id="result-users-modal" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modal-title"> </h5>
+            <h5 class="modal-title" id="modal-title">Resultados de operadores</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            <form>
-              <div class="form-group">
-                <label for="inputName">Nombre completo</label>
-                <input id='name' type="text" class="form-control" id="inputName" placeholder="Nombre">
-              </div>
-              <div class="form-group">
-                <label for="inputEmail">Correo electrónico</label>
-                <input id='email' type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Correo electrónico">
-                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-              </div>
-              <div class="form-group">
-                <label for="inputAddress">Dirección</label>
-                <input id='address' type="text" class="form-control" id="inputAddress" placeholder="Dirección">
-              </div>
-              <div class="form-group">
-                <label for="inputPassword">Password</label>
-                <input id='password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
-              </div>
-              <div class="form-group">
-                <label for="image">Foto operador</label>
-                <input type="file" onchange="loadImage(event)" class="form-control-file" id="image">
-              </div>
-              <img id="op-img" src="">
-              <div class="form-check">
-                <input type="checkbox" checked class="form-check-input" id="inputActive">
-                <label class="form-check-label" for="inputCheck">Activo</label>
-              </div>
-              <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="cleanFormUser()" id="close-createuser" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary accept-btn" data-dismiss="modal">Aceptar</button>
-              </div>
-            </form>
+          <div class="modal-body" id="result-users-body">
+
           </div>
         </div>
       </div>
     </div>
+
+
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
