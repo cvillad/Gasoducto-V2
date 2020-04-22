@@ -37,14 +37,6 @@ function login(){
                         })
                     }else window.location.href=("./employeeHome.html?employeeid=="+doc.id)
                 })
-            }).then(()=>{
-                if(!doc){
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Credenciales incorrectas',
-                    })
-                }
             }).catch(function(error) {
                 Swal.fire({
                     icon: 'error',
@@ -164,6 +156,7 @@ async function writeEmployees(){
         })
         console.log(numEmployees)
         document.getElementById("operators-title").innerHTML=`<h4 id="operators-title">Operadores (${numEmployees})</h4>`
+        numEmployees = 0
     })
 }
 
@@ -178,11 +171,14 @@ async function showUserResults(employeeId){
     let div = document.createElement("div")
     document.getElementById("results-modal-body").innerHTML=""
     if (array.length == 0){
+        document.getElementById("results-modal").className = document.getElementById("results-modal").className.replace(" results-modal","")
         div.innerHTML=`
         <div class="card-body justify-content-between shown-tests">
             <h2>No hay resultados disponibles</h2>
         </div>`
+        document.getElementById("results-modal-body").appendChild(div)
     } else {
+        document.getElementById("results-modal").classList.add("results-modal")
         let ul = document.createElement("ul")
         ul.classList.add("nav")
         ul.classList.add("nav-tabs")
@@ -212,7 +208,8 @@ async function showUserResults(employeeId){
         array.forEach(function(entry) {
             draw(entry.acum,entry.testId)
             let button = document.createElement("div")
-            button.innerHTML=`<button onclick=deleteResults("${employeeId}","${entry.testId}")>Borrar</button>`
+            //button.innerHTML=`<button class="btn btn-outline-danger my-2 my-sm-0 erase-button" onclick="deleteResults("${employeeId}","${entry.testId}")">Borrar</button>`
+            button.innerHTML=`<button class="btn btn-outline-danger my-2 my-sm-0 erase-button" data-dismiss="modal" onclick=deleteResults("${employeeId}","${entry.testId}")>Borrar</button>`
             document.getElementById(entry.testId).appendChild(button)
         })
     }
@@ -229,11 +226,14 @@ async function showTestResults(testId){
     let div = document.createElement("div")
     document.getElementById("result-users-body").innerHTML=""
     if (array.length == 0){
+        document.getElementById("results-modal").className = document.getElementById("results-modal").className.replace(" results-modal","")
         div.innerHTML=`
         <div class="card-body justify-content-between shown-tests">
             <h2>No hay resultados disponibles</h2>
         </div>`
+        document.getElementById("result-users-body").appendChild(div)
     } else {
+        document.getElementById("results-modal").classList.add("results-modal")
         let ul = document.createElement("ul")
         ul.classList.add("nav")
         ul.classList.add("nav-tabs")
@@ -263,7 +263,7 @@ async function showTestResults(testId){
         array.forEach(function(entry){
             draw(entry.acum,entry.employeeId)
             let button = document.createElement("div")
-            button.innerHTML=`<button onclick=deleteResults("${entry.employeeId}","${testId}")>Borrar</button>`
+            button.innerHTML=`<button class="btn btn-outline-danger my-2 my-sm-0 erase-button" data-dismiss="modal" onclick=deleteResults("${entry.employeeId}","${testId}")>Borrar</button>`
             document.getElementById(entry.employeeId).appendChild(button)
         })
 
@@ -319,6 +319,7 @@ async function deleteResults(employeeId, testId){
         console.log("Tests results erased from user successfully")
     })
 
+
 }
 
 
@@ -338,7 +339,6 @@ function draw(acum,divId) {
         }]
     });
     chart.render();
-    
     }
 
 async function get(){
@@ -479,28 +479,50 @@ function createQuestionObject(question){
   
 
  async function createTest(){
-    const db = firebase.firestore()
-    const company = firebase.auth().currentUser
-    await db.collection('Tests').add({
-      companyId: company.uid,
-      testName: document.getElementById("testName").value,
-      question1: createQuestionObject(1),
-      question2: createQuestionObject(2),
-      question3: createQuestionObject(3),
-      question4: createQuestionObject(4),
-      question5: createQuestionObject(5),
-      employees: []
-    }).catch(function(err) {
+    if (checkPoints()){
+        const db = firebase.firestore()
+        const company = firebase.auth().currentUser
+        await db.collection('Tests').add({
+          companyId: company.uid,
+          testName: document.getElementById("testName").value,
+          question1: createQuestionObject(1),
+          question2: createQuestionObject(2),
+          question3: createQuestionObject(3),
+          question4: createQuestionObject(4),
+          question5: createQuestionObject(5),
+          employees: []
+        }).catch(function(err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'No se pudo f la prueba, revise todos los campos',
+            })
+    
+            console.log(err)
+        })
+        window.location.href = "./tests.html"
+    }else {
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: 'No se pudo f la prueba, revise todos los campos',
+            text: 'La suma de los puntos debe dar 5, por favor revisar los campos',
         })
-
-        console.log(err)
-    })
-    window.location.href = "./tests.html"
+    }
   }
+
+  
+
+
+function checkPoints(){
+    let point1 = parseFloat(document.getElementById("weight1").value)
+    let point2 = parseFloat(document.getElementById("weight2").value)
+    let point3 = parseFloat(document.getElementById("weight3").value)
+    let point4 = parseFloat(document.getElementById("weight4").value)
+    let point5 = parseFloat(document.getElementById("weight5").value)
+    let total = point1+point2+point3+point4+point5;
+    console.log(total)
+    return (total == 5)
+}
 
 function deleteEmployee(userid){
     const db=firebase.firestore()
