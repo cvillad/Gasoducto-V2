@@ -89,14 +89,16 @@ function createCompany(){
                 docNumber: document.getElementById('docNum').value,
                 enterpriseName: document.querySelector("#enterprise").value
             }).then(()=>window.location.href=("./admin.html"))
-            .catch(()=>{
+            .catch((err)=>{
+                console.log("sad: "+err)
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
                     text: 'Registro fallido',
                 })
             })
-        }, ()=> {
+        }, (err)=> {
+            console.log(err)
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
