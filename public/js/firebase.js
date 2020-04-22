@@ -341,20 +341,22 @@ function draw(acum,divId) {
     chart.render();
     }
 
-async function get(){
+var exist
+async function emailExists(){
     const db=firebase.firestore()
+    exist=false
     querySnapshot=await db.collection('Employees').where("email","==",email).get()
     querySnapshot.forEach(function(doc) {
-        console.log(doc.data())
+        exist=true
     })
 }
 
-function addEmployee(event){
+async function addEmployee(event){
     event.preventDefault()
     const db = firebase.firestore();
     email=document.querySelector('#email').value
-    get()
-    if(validateEmail(email)){
+    await emailExists()
+    if(validateEmail(email) && !exist){
         db.collection('Employees').add({
             email: document.querySelector('#email').value,
             address: document.querySelector("#address").value,
@@ -373,6 +375,12 @@ function addEmployee(event){
             const ref=firebase.storage().ref("images/employees/"+doc.id)
             ref.put(image)
         }).finally(()=>$('#create-user-modal').modal('hide'))
+    }else if(exist){
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Ya existe un empleado con esta dirección de correo electrónico',
+        })
     }
 }
 
@@ -391,9 +399,10 @@ async function getEmployee(id){
     return employee.data()
 }
 
-function editEmployee(event,id){
+async function editEmployee(event,id){
     event.preventDefault()
     email=document.querySelector('#edit-email').value
+    await emailExists()
     if(validateEmail(email)){
         const db=firebase.firestore()
         db.collection("Employees").doc(id).update({
