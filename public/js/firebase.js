@@ -156,9 +156,9 @@ function writeEmployees(){
                 <div class="card-body justify-content-between shown-tests">
                     <p>${doc.data().name}</p>
                     <div>
-                        <button class="btn btn-primary edit-btn" data-toggle="modal" data-target="#user-results-modal" onclick=showUserResults("${doc.id}")>Ver resultados</button>
-                        <button class="btn btn-primary edit-btn" data-toggle="modal" data-target="#create-user-modal" onclick=updateEmployee("${doc.id}")>Editar</button>
-                        <button onclick=deleteEmployee("${doc.id}") class="btn btn-danger delete-btn" type="button"  >
+                        <button class="btn btn-outline-primary my-2 my-sm-0" data-toggle="modal" data-target="#user-results-modal" onclick=showUserResults("${doc.id}")>Ver resultados</button>
+                        <button class="btn btn-outline-primary my-2 my-sm-0" data-toggle="modal" data-target="#edit-user-modal" onclick=showEmployee("${doc.id}")>Editar</button>
+                        <button onclick=deleteEmployee("${doc.id}") class="btn btn-outline-danger my-2 my-sm-0" type="button"  >
                         <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -263,7 +263,7 @@ function cleanFormUser(){
     document.querySelector("#email").value=""
     document.querySelector("#name").value=""
     document.querySelector("#address").value=""
-    document.querySelector("").value=""
+    document.querySelector("#image").value=""
 }
 
 async function getEmployee(id){
@@ -307,12 +307,16 @@ function showEmployee(id){
 }
 
 function loadEmployeeImage(id){
-    firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
+    console.log("doc: "+id)
     const img = document.getElementById('op-img');
-    img.src = url; 
+    firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
+        img.style.display="block"
+        img.src = url; 
     }).catch(function(error) {
+        img.style.display="none"
+        img.src=""
         console.log(error)
-    });
+    })
 }
 
 function loadProfileImage(id){
@@ -496,7 +500,7 @@ function testListTemplate(doc, isEmployee){
             <p>${doc.data().testName}</p>
             <div>
                 <button class="btn btn-outline-primary my-2 my-sm-0" data-toggle="modal" data-target="#result-users-modal" onclick=showTestResults("${doc.id}")>Resultados</button>
-                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=deleteTest("${doc.id}")>Borrar</button>
+                <button class="btn btn-outline-danger my-2 my-sm-0" onclick=deleteTest("${doc.id}")><i class="fas fa-trash-alt"></i></button>
             </div>
         </div>`
     }
