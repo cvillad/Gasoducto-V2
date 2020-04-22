@@ -178,23 +178,43 @@ async function showUserResults(employeeId){
     })
     let array = employee.data().tests
     let div = document.createElement("div")
-    div.classList.add("card")
+    document.getElementById("results-modal-body").innerHTML=""
     if (array.length == 0){
         div.innerHTML=`
         <div class="card-body justify-content-between shown-tests">
             <h2>No hay resultados disponibles</h2>
         </div>`
     } else {
+        let ul = document.createElement("ul")
+        ul.classList.add("nav")
+        ul.classList.add("nav-tabs")
+        let tab_content = document.createElement("div")
+        tab_content.classList.add("tab-content")
+        let first = true
         array.forEach(function(entry){
-            div.innerHTML=`
-            <div class="card-body justify-content-between shown-tests">
-                <p>${entry.testName}</p>
-                <p>${entry.acum} puntos de 5</p>
-            </div>`
+            let li = document.createElement("li")
+            li.classList.add("nav-item")
+
+            let tab = document.createElement("div")
+            tab.classList.add("tab-pane")
+            if(first){
+                li.innerHTML = `<a class="nav-link active" data-toggle="tab" href="#${entry.testId}">${entry.testName}</a>`
+                tab.classList.add("active");
+                first = false;
+            }else{
+                li.innerHTML = `<a class="nav-link" data-toggle="tab" href="#${entry.testId}">${entry.testName}</a>`
+                tab.classList.add("fade");
+            }
+            ul.appendChild(li)
+            tab.id = `${entry.testId}`
+            tab_content.appendChild(tab)
+        })
+        document.getElementById("results-modal-body").appendChild(ul)
+        document.getElementById("results-modal-body").appendChild(tab_content)
+        array.forEach(function(entry) {
+            draw(entry.acum,entry.testId)
         })
     }
-    document.getElementById("results-modal-body").innerHTML=""
-    document.getElementById("results-modal-body").appendChild(div)
 }
 
 async function showTestResults(testId){
@@ -206,24 +226,97 @@ async function showTestResults(testId){
     })
     let array = test.data().employees
     let div = document.createElement("div")
-    div.classList.add("card")
+    document.getElementById("result-users-body").innerHTML=""
     if (array.length == 0){
         div.innerHTML=`
         <div class="card-body justify-content-between shown-tests">
             <h2>No hay resultados disponibles</h2>
         </div>`
     } else {
+        let ul = document.createElement("ul")
+        ul.classList.add("nav")
+        ul.classList.add("nav-tabs")
+        let tab_content = document.createElement("div")
+        tab_content.classList.add("tab-content")
+        let first = true
         array.forEach(function(entry){
-            div.innerHTML=`
-            <div class="card-body justify-content-between shown-tests">
-                <p>${entry.employeeName}</p>
-                <p>${entry.acum} puntos de 5</p>
-            </div>`
+            let li = document.createElement("li")
+            li.classList.add("nav-item")
+
+            let tab = document.createElement("div")
+            tab.classList.add("tab-pane")
+            if(first){
+                li.innerHTML = `<a class="nav-link active" data-toggle="tab" href="#${entry.employeeId}">${entry.employeeName}</a>`
+                tab.classList.add("active");
+                first = false;
+            }else{
+                li.innerHTML = `<a class="nav-link" data-toggle="tab" href="#${entry.employeeId}">${entry.employeeName}</a>`
+                tab.classList.add("fade")
+            }
+            ul.appendChild(li)
+            tab.id = `${entry.employeeId}`
+            tab_content.appendChild(tab)
         })
+        document.getElementById("result-users-body").appendChild(ul)
+        document.getElementById("result-users-body").appendChild(tab_content) 
+        array.forEach(function(entry){
+            console.log(document.getElementById(`${entry.employeeId}`))
+            draw(entry.acum,entry.employeeId)
+        })
+
     }
-    document.getElementById("result-users-body").innerHTML=""
-    document.getElementById("result-users-body").appendChild(div)
 }
+
+function draw(acum,divId) {
+    var chart = new CanvasJS.Chart(divId, {
+        animationEnabled: true,
+
+        data: [{
+            type: "pie",
+            startAngle: 240,
+            yValueFormatString: "##0.00\"%\"",
+            indexLabel: "{label} {y}",
+            dataPoints: [
+                {y: acum, label: "Correcto"},
+                {y: 5-acum, label: "Incorrecto"}
+            ]
+        }]
+    });
+    chart.render();
+    
+    }
+
+
+async function preDraw(acum,divId){
+    // Load the Visualization API and the corechart package.
+    await google.charts.load('current', {'packages':['corechart']});
+    // Set a callback to run when the Google Visualization API is loaded.
+    drawChart(acum,divId);
+}
+
+
+function drawChart(acum,divId) {
+
+    // Create the data table.
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Topping');
+    data.addColumn('number', 'Slices');
+    data.addRows([
+      ['Correcto', acum],
+      ['Incorrecto', 5-acum]
+    ]);
+
+    // Set chart options
+    var options = {'title':'Calificación',
+                   'width':400,
+                   'height':300};
+
+    // Instantiate and draw our chart, passing in some options.
+    var chart = new google.visualization.PieChart(document.getElementById(divId));
+    chart.draw(data, options);
+  }
+
+
 
 function addEmployee(){
     const database = firebase.firestore();
@@ -472,8 +565,8 @@ async function getTests(){
         firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
                 company = firebase.auth().currentUser.uid
-                db.collection("Tests").where("companyId","==",company).get()
-                .then(function(querySnapshot) {
+                db.collection("Tests").where("companyId","==",company).onSnapshot((querySnapshot) => {
+                    document.getElementById("tests-card").innerHTML=""
                     querySnapshot.forEach(function(doc) {
                         testListTemplate(doc, isEmployee)
                     })
