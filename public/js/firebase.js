@@ -489,35 +489,56 @@ function createQuestionObject(question){
   
 
  async function createTest(){
-    if (checkPoints()){
-        const db = firebase.firestore()
-        const company = firebase.auth().currentUser
-        await db.collection('Tests').add({
-          companyId: company.uid,
-          testName: document.getElementById("testName").value,
-          question1: createQuestionObject(1),
-          question2: createQuestionObject(2),
-          question3: createQuestionObject(3),
-          question4: createQuestionObject(4),
-          question5: createQuestionObject(5),
-          employees: []
-        }).catch(function(err) {
+    if (validateFields() && document.getElementById("testName").value != ""){
+        if (checkPoints()){
+            const db = firebase.firestore()
+            const company = firebase.auth().currentUser
+            await db.collection('Tests').add({
+            companyId: company.uid,
+            testName: document.getElementById("testName").value,
+            question1: createQuestionObject(1),
+            question2: createQuestionObject(2),
+            question3: createQuestionObject(3),
+            question4: createQuestionObject(4),
+            question5: createQuestionObject(5),
+            employees: []
+            }).catch(function(err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'No se pudo f la prueba, revise todos los campos',
+                })
+        
+                console.log(err)
+            })
+            window.location.href = "./tests.html"
+        }else {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: 'No se pudo f la prueba, revise todos los campos',
+                text: 'La suma de los puntos debe dar 5, por favor revisar los campos',
             })
-    
-            console.log(err)
-        })
-        window.location.href = "./tests.html"
-    }else {
+        }
+    }else{
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: 'La suma de los puntos debe dar 5, por favor revisar los campos',
+            text: 'No puede dejar ningún campo vacío, por favor revisar los campos',
         })
     }
+  }
+
+  function validateFields(){
+      return (validateQuestionFields(1) && validateQuestionFields(2) && validateQuestionFields(3) && validateQuestionFields(4) && validateQuestionFields(5))
+  }
+
+  function validateQuestionFields(number){
+      let textField = document.getElementById(`question${number}Desc`).value != ""
+      let option1Field = document.getElementById(`q${number}o1`).value != ""
+      let option2Field = document.getElementById(`q${number}o2`).value != ""
+      let option3Field = document.getElementById(`q${number}o3`).value != ""
+      let weightField = document.getElementById("weight1").value != ""
+      return (textField && option1Field && option2Field && option3Field && weightField)
   }
 
   
