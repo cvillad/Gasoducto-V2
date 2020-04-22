@@ -16,11 +16,11 @@ html,body{
 }
 
 .account{
-    margin-left: auto;
+    margin-left: 0;
 }
 
 .notifications{
-    margin-right: 10px;
+    margin-left: auto;
 }
 
 .dropdown-menu{
