@@ -144,12 +144,14 @@ function recoverPassword(){
     });
 }
 
-function writeEmployees(){
+async function writeEmployees(){
     const db = firebase.firestore();
-    db.collection("Employees").onSnapshot((querySnapshot)=> {
+    let numEmployees = 0;
+    await db.collection("Employees").onSnapshot((querySnapshot)=> {
         document.querySelector(".card-body").innerHTML = "";
         querySnapshot.forEach((doc)=> {
             if(firebase.auth().currentUser.uid==doc.data().company){
+                numEmployees = numEmployees + 1;
                 const row = document.createElement("div")
                 row.classList.add("card")
                 row.innerHTML=`
@@ -166,6 +168,8 @@ function writeEmployees(){
                 document.querySelector(".card-body").appendChild(row)
             }
         })
+        console.log(numEmployees)
+        document.getElementById("operators-title").innerHTML=`<h4 id="operators-title">Operadores (${numEmployees})</h4>`
     })
 }
 
@@ -213,6 +217,9 @@ async function showUserResults(employeeId){
         document.getElementById("results-modal-body").appendChild(tab_content)
         array.forEach(function(entry) {
             draw(entry.acum,entry.testId)
+            let button = document.createElement("div")
+            button.innerHTML=`<button onclick=deleteResults("${employeeId}","${entry.testId}")>Borrar</button>`
+            document.getElementById(entry.testId).appendChild(button)
         })
     }
 }
@@ -258,23 +265,77 @@ async function showTestResults(testId){
             tab_content.appendChild(tab)
         })
         document.getElementById("result-users-body").appendChild(ul)
-        document.getElementById("result-users-body").appendChild(tab_content) 
+        document.getElementById("result-users-body").appendChild(tab_content)
         array.forEach(function(entry){
-            console.log(document.getElementById(`${entry.employeeId}`))
             draw(entry.acum,entry.employeeId)
+            let button = document.createElement("div")
+            button.innerHTML=`<button onclick=deleteResults("${entry.employeeId}","${testId}")>Borrar</button>`
+            document.getElementById(entry.employeeId).appendChild(button)
         })
 
     }
 }
 
+async function deleteResults(employeeId, testId){
+    const db = firebase.firestore();
+    const test = await db.collection("Tests").doc(testId).get().then(function(doc) {
+        if (doc.exists){
+            return doc
+        }
+    })
+    const employee = await db.collection("Employees").doc(employeeId).get().then(function(doc) {
+        if (doc.exists){
+            return doc
+        }
+    })
+    let array = test.data().employees
+    let temp = []
+    array.forEach(function(entry) {
+        if (entry.employeeId != employeeId){
+            temp.push(entry)
+        }
+    })
+    db.collection("Tests").doc(testId).update({
+        employees: temp 
+    }).catch(()=>{{
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Falló al editar test',
+        })
+    }}).then(()=>{
+        console.log("User results erased from test successfully")
+    })
+    array = employee.data().tests
+    temp = []
+    array.forEach(function(entry) {
+        if (entry.testId != testId){
+            temp.push(entry)
+        }
+    })
+    db.collection("Employees").doc(employeeId).update({
+        tests: temp 
+    }).catch(()=>{{
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Falló al editar empleado',
+        })
+    }}).then(()=>{
+        console.log("Tests results erased from user successfully")
+    })
+
+}
+
+
 function draw(acum,divId) {
     var chart = new CanvasJS.Chart(divId, {
         animationEnabled: true,
-
+        width:475,
         data: [{
             type: "pie",
             startAngle: 240,
-            yValueFormatString: "##0.00\"%\"",
+            yValueFormatString: "#: 0 punto/s",
             indexLabel: "{label} {y}",
             dataPoints: [
                 {y: acum, label: "Correcto"},
@@ -285,37 +346,6 @@ function draw(acum,divId) {
     chart.render();
     
     }
-
-
-async function preDraw(acum,divId){
-    // Load the Visualization API and the corechart package.
-    await google.charts.load('current', {'packages':['corechart']});
-    // Set a callback to run when the Google Visualization API is loaded.
-    drawChart(acum,divId);
-}
-
-
-function drawChart(acum,divId) {
-
-    // Create the data table.
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Topping');
-    data.addColumn('number', 'Slices');
-    data.addRows([
-      ['Correcto', acum],
-      ['Incorrecto', 5-acum]
-    ]);
-
-    // Set chart options
-    var options = {'title':'Calificación',
-                   'width':400,
-                   'height':300};
-
-    // Instantiate and draw our chart, passing in some options.
-    var chart = new google.visualization.PieChart(document.getElementById(divId));
-    chart.draw(data, options);
-  }
-
 
 
 function addEmployee(){

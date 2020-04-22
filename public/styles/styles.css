@@ -134,3 +134,7 @@ img{
 .navbar-title {
     display: flex;
 }
+
+.results-modal {
+    height: 530px;
+}
