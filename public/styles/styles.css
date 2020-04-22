@@ -19,6 +19,10 @@ html,body{
     margin-left: auto;
 }
 
+.notifications{
+    margin-right: 10px;
+}
+
 .dropdown-menu{
     left: -70px;
 }

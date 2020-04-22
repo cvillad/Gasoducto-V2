@@ -738,6 +738,13 @@ async function sendTest(employeeId, docId){
     }).then(function (doc) {
         console.log("added employee to test")
     })
+
+    db.collection('Notifications').add({
+        test: testDoc.data().testName,
+        employee: employeeDoc.data().name,
+        companyID: testDoc.data().companyId
+    })
+
     Swal.fire({
         icon: 'success',
         title: 'Resultados',
@@ -747,6 +754,26 @@ async function sendTest(employeeId, docId){
         window.location.href = `employeeHome.html?employeeid==${url}`
     })
 }
+
+
+function notification(){
+    firebase.auth().onAuthStateChanged((user)=> {
+        //console.log(user.uid)
+        const db = firebase.firestore();
+        db.collection("Notifications").where("companyID","==",user.uid).onSnapshot((querySnapshot)=> {
+            let count = 0
+            querySnapshot.forEach((doc)=> {
+                count = count+1
+                let p = document.createElement("h6")
+                p.innerHTML=`${doc.data().employee} realizó el cuestionario ${doc.data().test}`
+                //console.log(doc.data().employee+" ha realizado el test "+doc.data().test)
+                document.getElementById("notifications").appendChild(p)
+            })
+            document.getElementById("notificationsDropdownMenuLink").innerHTML=`Notificaciones (${count})`
+        })
+    })
+}
+
 
 function createTestObject(testDoc,acum){
     let temp = {
