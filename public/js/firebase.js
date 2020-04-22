@@ -111,12 +111,6 @@ function createCompany(){
                 text: 'Registro fallido',
             })
         })
-    }else{
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Dirección de correo inválida',
-        })
     }
 }
 
@@ -347,12 +341,21 @@ function draw(acum,divId) {
     
     }
 
+async function get(){
+    const db=firebase.firestore()
+    querySnapshot=await db.collection('Employees').where("email","==",email).get()
+    querySnapshot.forEach(function(doc) {
+        console.log(doc.data())
+    })
+}
 
-function addEmployee(){
-    const database = firebase.firestore();
+function addEmployee(event){
+    event.preventDefault()
+    const db = firebase.firestore();
     email=document.querySelector('#email').value
+    get()
     if(validateEmail(email)){
-        database.collection('Employees').add({
+        db.collection('Employees').add({
             email: document.querySelector('#email').value,
             address: document.querySelector("#address").value,
             name: document.querySelector('#name').value,
@@ -369,15 +372,7 @@ function addEmployee(){
         }).then((doc)=> {
             const ref=firebase.storage().ref("images/employees/"+doc.id)
             ref.put(image)
-            cleanFormUser()
-        })
-        
-    }else{
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Dirección de correo inválida',
-        })
+        }).finally(()=>$('#create-user-modal').modal('hide'))
     }
 }
 
@@ -396,23 +391,27 @@ async function getEmployee(id){
     return employee.data()
 }
 
-function editEmployee(id){
-    const db=firebase.firestore()
-    db.collection("Employees").doc(id).update({
-        email: document.querySelector('#edit-email').value,
-        name: document.querySelector('#edit-name').value,
-        address: document.querySelector("#edit-address").value,
-        password: document.querySelector('#edit-password').value,
-        state: document.querySelector("#inputActive").checked
-    }).catch(()=>{{
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Falló al editar empleado',
-        })
-    }}).then(()=>{
-        firebase.storage().ref("images/employees/"+id).put(image)
-    })
+function editEmployee(event,id){
+    event.preventDefault()
+    email=document.querySelector('#edit-email').value
+    if(validateEmail(email)){
+        const db=firebase.firestore()
+        db.collection("Employees").doc(id).update({
+            email: email,
+            name: document.querySelector('#edit-name').value,
+            address: document.querySelector("#edit-address").value,
+            password: document.querySelector('#edit-password').value,
+            state: document.querySelector("#inputActive").checked
+        }).catch(()=>{{
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Falló al editar empleado',
+            })
+        }}).then(()=>{
+            firebase.storage().ref("images/employees/"+id).put(image)
+        }).finally(()=>{$("#edit-user-modal").modal("hide")})
+    }
 }
 
 function showEmployee(id){
@@ -423,47 +422,39 @@ function showEmployee(id){
         document.querySelector("#edit-address").value=employee.address
         document.querySelector("#inputActive").checked=employee.state
         loadEmployeeImage(id)
-        console.log("document: "+id)
+        document.querySelector("#edit-form").onsubmit=function(){editEmployee(event,id)}
         document.querySelector(".edit-footer").innerHTML=`<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" onclick=editEmployee("${id}") data-dismiss="modal">Aceptar</button>`
-    }).catch((err)=>console.log("edit error: "+err))
+        <button class="btn btn-primary" type=submit>Aceptar</button>`
+    })
+    
 }
 
 function loadEmployeeImage(id){
-    console.log("doc: "+id)
-    const img = document.getElementById('op-img');
-    firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
-        img.style.display="block"
-        img.src = url; 
-    }).catch(function(error) {
-        img.style.display="none"
-        img.src=""
-        console.log(error)
-    })
+    try{
+        const img = document.getElementById('op-img');
+        firebase.storage().ref().child('images/employees/'+id).getDownloadURL().then(function(url) {
+            img.style.display="block"
+            img.src = url; 
+        }).catch(function(error) {
+            img.style.display="none"
+            img.src=""
+        })
+    }catch(err){
+    } 
 }
 
-function loadProfileImage(id){
+async function loadProfileImage(id){
+    storage=firebase.storage()
     if (!window.location.search[0]) {
-        firebase.storage().ref().child('images/'+id).getDownloadURL().then(function(url) {
-        const img = document.querySelector('.profile-img');
-        console.log(img)
-        img.src = url;
-        }).catch(function(error) {
-            console.log(error)
-        });
+        url=await storage.ref().child('images/'+id).getDownloadURL()
+            
     }else{
         let split = document.location.search.split("?")[1];
         let employeeId = split.split("==")[1]
-        firebase.storage().ref().child('images/employees/'+employeeId).getDownloadURL().then(function(url) {
-        const img = document.querySelector('.profile-img');
-        console.log(img)
-        img.src = url;
-        }).catch(function(error) {
-            console.log(error)
-        });
+        url = await storage.ref().child('images/employees/'+employeeId).getDownloadURL()
     }
-
-    
+    const img = document.querySelector('.profile-img');
+    img.src = url;
 }
 
 
@@ -521,20 +512,24 @@ function deleteEmployee(userid){
     })
 }
 
-function validateEmail(mail) 
-{
- if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(document.querySelector("#email").value)){
-    return true
-  }
-  
-    return false
+function validateEmail(mail) {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)){
+        return true
+    }else{
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: mail+' Dirección de correo inválida',
+        })
+        return false
+    }
+    
 }
 
 async function getCompanyName(){
     const db = firebase.firestore()
     //console.log(document.getElementById("navbar-title"))
     if(!document.location.search) {
-        console.log("monda")
         firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
                 const companyId = firebase.auth().currentUser.uid

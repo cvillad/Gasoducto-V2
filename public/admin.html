@@ -58,7 +58,7 @@
           <div class="card operator-card">
             <div class="card-header justify-content-between">
               <h4 id="operators-title">Operadores</h4>
-              <button type="button" class="btn btn-primary add-btn" data-toggle="modal" data-target="#create-user-modal">
+              <button type="button" onclick="cleanFormUser()" class="btn btn-primary add-btn" data-toggle="modal" data-target="#create-user-modal">
                 Añadir
               </button>
             </div>
@@ -82,23 +82,22 @@
             </button>
           </div>
           <div class="modal-body">
-            <form>
+            <form onsubmit="addEmployee(event)">
               <div class="form-group">
                 <label for="inputName">Nombre completo</label>
-                <input id='name' type="text" class="form-control" id="inputName" placeholder="Nombre">
+                <input required id='name' type="text" class="form-control" id="inputName" placeholder="Nombre">
               </div>
               <div class="form-group">
                 <label for="inputEmail">Correo electrónico</label>
-                <input id='email' type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Correo electrónico">
-                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                <input required id='email' type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Correo electrónico">
               </div>
               <div class="form-group">
                 <label for="inputAddress">Dirección</label>
-                <input id='address' type="text" class="form-control" id="inputAddress" placeholder="Dirección">
+                <input required id='address' type="text" class="form-control" id="inputAddress" placeholder="Dirección">
               </div>
               <div class="form-group">
                 <label for="inputPassword">Password</label>
-                <input id='password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
+                <input required id='password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
               </div>
               <div class="form-group">
                 <label for="image">Foto operador</label>
@@ -106,7 +105,7 @@
               </div>
               <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="cleanFormUser()" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="addEmployee()"  data-dismiss="modal">Aceptar</button>
+                <button class="btn btn-primary" type="submit" >Aceptar</button>
               </div>
             </form>
           </div>
@@ -124,23 +123,22 @@
             </button>
           </div>
           <div class="modal-body">
-            <form>
+            <form id="edit-form">
               <div class="form-group">
                 <label for="inputName">Nombre completo</label>
-                <input id='edit-name' type="text" class="form-control" id="inputName" placeholder="Nombre">
+                <input required id='edit-name' type="text" class="form-control" id="inputName" placeholder="Nombre">
               </div>
               <div class="form-group">
                 <label for="inputEmail">Correo electrónico</label>
-                <input id='edit-email' type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Correo electrónico">
-                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                <input required id='edit-email' type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" placeholder="Correo electrónico">
               </div>
               <div class="form-group">
                 <label for="inputAddress">Dirección</label>
-                <input id='edit-address' type="text" class="form-control" id="inputAddress" placeholder="Dirección">
+                <input required id='edit-address' type="text" class="form-control" id="inputAddress" placeholder="Dirección">
               </div>
               <div class="form-group">
                 <label for="inputPassword">Password</label>
-                <input id='edit-password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
+                <input required id='edit-password' type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
               </div>
               <div class="form-group">
                 <label for="image">Foto operador</label>
