@@ -403,7 +403,7 @@ async function editEmployee(event,id){
     event.preventDefault()
     email=document.querySelector('#edit-email').value
     await emailExists()
-    if(validateEmail(email) && !exist){
+    if(validateEmail(email)){
         const db=firebase.firestore()
         db.collection("Employees").doc(id).update({
             email: email,
@@ -420,12 +420,6 @@ async function editEmployee(event,id){
         }}).then(()=>{
             firebase.storage().ref("images/employees/"+id).put(image)
         }).finally(()=>{$("#edit-user-modal").modal("hide")})
-    }else if(exist){
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Ya existe un empleado con esta dirección de correo electrónico',
-        })
     }
 }
 
