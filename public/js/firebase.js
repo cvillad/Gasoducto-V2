@@ -130,11 +130,12 @@ function recoverPassword(){
     });
 }
 
-async function writeEmployees(){
+function writeEmployees(){
     const db = firebase.firestore();
-    let numEmployees = 0;
-    await db.collection("Employees").onSnapshot((querySnapshot)=> {
+    
+    db.collection("Employees").onSnapshot((querySnapshot)=> {
         document.querySelector(".card-body").innerHTML = "";
+        let numEmployees = 0;
         querySnapshot.forEach((doc)=> {
             if(firebase.auth().currentUser.uid==doc.data().company){
                 numEmployees = numEmployees + 1;
@@ -142,7 +143,7 @@ async function writeEmployees(){
                 row.classList.add("card")
                 row.innerHTML=`
                 <div class="card-body justify-content-between shown-tests">
-                    <p>${doc.data().name}</p>
+                    <p class="item-list">${doc.data().name}</p>
                     <div>
                         <button class="btn btn-outline-primary my-2 my-sm-0" data-toggle="modal" data-target="#user-results-modal" onclick=showUserResults("${doc.id}")>Ver resultados</button>
                         <button class="btn btn-outline-primary my-2 my-sm-0" data-toggle="modal" data-target="#edit-user-modal" onclick=showEmployee("${doc.id}")>Editar</button>
@@ -154,8 +155,8 @@ async function writeEmployees(){
                 document.querySelector(".card-body").appendChild(row)
             }
         })
+        document.getElementById("operators-title").innerHTML=`<h4 id="operators-title">Empleados (${numEmployees})</h4>`
         console.log(numEmployees)
-        document.getElementById("operators-title").innerHTML=`<h4 id="operators-title">Operadores (${numEmployees})</h4>`
         numEmployees = 0
     })
 }
