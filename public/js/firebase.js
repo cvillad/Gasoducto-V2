@@ -707,26 +707,44 @@ async function sendTest(employeeId, docId){
         }
     })
     let acum = calculateResult(testDoc)
-
-    let div = document.createElement("div")
-    div.innerHTML=`<h1>${acum} de 5 puntos</h1>`
-    document.getElementById("points").appendChild(div)
-    $('#results-modal').modal('show');
     let temp = employeeDoc.data().tests
-    temp.push(createTestObject(testDoc,acum))
-    console.log(temp)
-    await db.collection("Employees").doc(employeeId).update({
+    let modified = false
+    temp.forEach(function(entry) {
+        if(entry.testId == testDoc.id){
+            entry.acum = acum
+            modified = true
+        }
+    })
+    if(!modified){
+        temp.push(createTestObject(testDoc,acum))
+    }
+    db.collection("Employees").doc(employeeId).update({
         tests: temp
     }).then(function(doc) {
         console.log("added test to employee")
     })
     
     let temp2 = testDoc.data().employees
-    temp2.push(createEmployeeObject(employeeDoc,acum))
+    temp2.forEach(function(entry) {
+        if (entry.employeeId == employeeDoc.id){
+            entry.acum = acum
+        }
+    })
+    if(!modified){
+        temp2.push(createEmployeeObject(employeeDoc,acum))   
+    }
     db.collection("Tests").doc(testId).update({
         employees: temp2
     }).then(function (doc) {
         console.log("added employee to test")
+    })
+    Swal.fire({
+        icon: 'success',
+        title: 'Resultados',
+        text: `${acum} de 5 puntos`,
+    }).then(() => {
+        url = window.location.search.split("?")[1].split("==")[1]
+        window.location.href = `employeeHome.html?employeeid==${url}`
     })
 }
 
